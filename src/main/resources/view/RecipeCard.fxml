@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+   <stylesheets>
+      <URL value="@Style.css" />
+   </stylesheets>
+   <Button mnemonicParsing="false" onAction="#handleSelectRecipe" prefHeight="140.0" prefWidth="168.0" styleClass="recipe-button">
+      <graphic>
+         <VBox alignment="CENTER">
+            <children>
+               <ImageView fitHeight="70.0" fitWidth="90.0" pickOnBounds="true" preserveRatio="true" >
+                  <image>
+                     <Image url="@../images/recipe.png" />
+                  </image>
+               </ImageView>
+               <Label fx:id="name" alignment="CENTER" styleClass="recipe_name_label" text="\$name" wrapText="true" />
+               <HBox prefHeight="100.0" prefWidth="200.0" alignment="CENTER">
+                  <children>
+                     <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@../images/pink_timer.png" />
+                        </image>
+                     </ImageView>
+                     <Pane prefHeight="4.0" prefWidth="4.0"></Pane>
+                     <Label text="X mins" />
+                     <Pane prefHeight="10.0" prefWidth="20.0"></Pane>
+                     <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <Image url="@../images/pax.png" />
+                        </image>
+                     </ImageView>
+                     <Pane prefHeight="4.0" prefWidth="4.0"></Pane>
+                     <Label text="1" />
+                  </children></HBox>
+            </children>
+         </VBox>
+      </graphic></Button>
+</StackPane>

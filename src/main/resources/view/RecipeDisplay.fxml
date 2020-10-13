@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefHeight="470.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+   <left>
+      <HBox BorderPane.alignment="CENTER">
+         <children>
+            <Pane prefHeight="400.0" prefWidth="5.0" />
+            <VBox prefHeight="470.0" prefWidth="288.0">
+               <children>
+                  <VBox>
+                     <children>
+                        <TextArea fx:id="recipeName" prefHeight="230.0" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+                  <Pane prefHeight="5.0" prefWidth="300.0" />
+                  <TextArea fx:id="ingredientDisplay" prefHeight="233.0" prefWidth="200.0" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </left>
+   <right>
+      <HBox BorderPane.alignment="CENTER_LEFT">
+         <children>
+            <TextArea fx:id="instructionDisplay" prefHeight="465.0" prefWidth="310.0" />
+            <Pane prefHeight="400.0" prefWidth="8.0" />
+         </children>
+      </HBox>
+   </right>
+</BorderPane>

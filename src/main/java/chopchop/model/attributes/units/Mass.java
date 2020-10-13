@@ -44,7 +44,7 @@ public class Mass implements Quantity {
     public Result<Quantity> add(Quantity qty) {
 
         if (!(qty instanceof Mass)) {
-            return Result.error("cannot add '%s' to '%s' (incompatbile units)", qty, this);
+            return Result.error("cannot add '%s' to '%s' (incompatible units)", qty, this);
         } else {
             var mass = (Mass) qty;
             var newval = this.value + (mass.value * (mass.ratio / this.ratio));

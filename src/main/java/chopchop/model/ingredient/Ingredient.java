@@ -7,9 +7,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 import chopchop.model.FoodEntry;
-import chopchop.model.attributes.ExpiryDate;
-import chopchop.model.attributes.Quantity;
 import chopchop.model.attributes.Name;
+import chopchop.model.attributes.Quantity;
+import chopchop.model.attributes.ExpiryDate;
+
+import chopchop.model.ingredient.exceptions.IncompatibleIngredientsException;
 
 /**
  * Represents an Ingredient in the recipe manager.
@@ -52,6 +54,25 @@ public class Ingredient extends FoodEntry {
         return Optional.ofNullable(expiryDate);
     }
 
+    /**
+     * Combines the quantities of this ingredient and the provided ingredient.
+     *
+     * @param other the other ingredient
+     * @return      a new {@code Ingredient} with the combined quantities
+     * @throws IncompatibleIngredientsException if the units of both ingredients were not compatible
+     */
+    public Ingredient combine(Ingredient other) throws IncompatibleIngredientsException {
+
+        if (!this.name.equals(other.name)) {
+            throw new IncompatibleIngredientsException(String.format("cannot combine '%s' with '%s'",
+                this.name, other.name));
+        }
+
+        // TODO: expiry date handling! see #58
+        return this.quantity.add(other.quantity)
+            .map(newQty -> new Ingredient(this.name, newQty, this.expiryDate))
+            .orElseThrow(err -> new IncompatibleIngredientsException(err));
+    }
 
     /**
      * Returns true if both ingredients of the same name and expiry date.

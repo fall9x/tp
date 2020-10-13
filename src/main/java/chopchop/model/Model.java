@@ -6,6 +6,8 @@ import java.util.function.Predicate;
 
 import chopchop.commons.core.GuiSettings;
 
+import chopchop.model.attributes.Name;
+
 import chopchop.model.recipe.Recipe;
 import chopchop.model.recipe.ReadOnlyRecipeBook;
 
@@ -71,6 +73,11 @@ public interface Model {
     Optional<Recipe> findRecipeWithName(String name);
 
     /**
+     * Finds a recipe by name.
+     */
+    Optional<Recipe> findRecipeWithName(Name name);
+
+    /**
      * Deletes the given recipe.
      * The recipe must exist in the recipe book.
      */
@@ -131,6 +138,11 @@ public interface Model {
      * Finds an ingredient by name.
      */
     Optional<Ingredient> findIngredientWithName(String name);
+
+    /**
+     * Finds an ingredient by name.
+     */
+    Optional<Ingredient> findIngredientWithName(Name name);
 
     /**
      * Adds the given person.

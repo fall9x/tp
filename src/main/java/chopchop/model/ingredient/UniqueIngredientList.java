@@ -25,6 +25,21 @@ public class UniqueIngredientList implements Iterable<Ingredient> {
     }
 
     /**
+     * Searches for an ingredient by name in this list, and returns its index. Returns -1
+     * if an ingredient with the given name could not be found.
+     *
+     * Name comparison is case-insensitive.
+     */
+    public int indexByName(String name) {
+        for (int i = 0; i < this.internalList.size(); i++) {
+            if (this.internalList.get(i).getName().equals(name)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Adds a Ingredient to the list.
      * The Ingredient must not already exist in the list.
      */

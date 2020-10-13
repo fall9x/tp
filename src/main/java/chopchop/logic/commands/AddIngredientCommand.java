@@ -4,6 +4,8 @@ package chopchop.logic.commands;
 
 import chopchop.model.Model;
 import chopchop.model.ingredient.Ingredient;
+import chopchop.model.ingredient.exceptions.IncompatibleIngredientsException;
+
 import chopchop.logic.commands.exceptions.CommandException;
 
 import static java.util.Objects.requireNonNull;
@@ -27,6 +29,7 @@ public class AddIngredientCommand extends Command {
         + ARG_EXPIRY + "2020-10-05";
 
     public static final String MESSAGE_SUCCESS = "New ingredient added: %1$s";
+    public static final String MESSAGE_COMBINED = "Updated ingredient: %1$s";
     public static final String MESSAGE_DUPLICATE_INGREDIENT = "This ingredient already exists in the ingredient book";
 
 
@@ -48,8 +51,24 @@ public class AddIngredientCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_INGREDIENT);
         }
 
-        model.addIngredient(ingredient);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, ingredient));
+        var foo = model.findIngredientWithName(this.ingredient.getName());
+        if (foo.isPresent()) {
+            var existing = foo.get();
+
+            try {
+                var combined = existing.combine(this.ingredient);
+                model.setIngredient(existing, combined);
+
+                return new CommandResult(String.format(MESSAGE_COMBINED, combined));
+
+            } catch (IncompatibleIngredientsException e) {
+                throw new CommandException(e.toString());
+            }
+
+        } else {
+            model.addIngredient(ingredient);
+            return new CommandResult(String.format(MESSAGE_SUCCESS, ingredient));
+        }
     }
 
     @Override

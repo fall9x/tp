@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+    <Button mnemonicParsing="false" prefHeight="140.0" prefWidth="168.0" styleClass="recipe-button">
+        <graphic>
+            <Label fx:id="name" styleClass="recipe_name_label" text="\$name" wrapText="true" />
+        </graphic></Button>
+</StackPane>

@@ -258,7 +258,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **Use case: U1 - Add recipe**
 
-**MSS:** 
+**MSS:**
 
 1. User chooses to add a recipe.
 2. User enters the details according to the format.

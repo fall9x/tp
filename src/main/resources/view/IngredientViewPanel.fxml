@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+    <bottom>
+        <ScrollPane fx:id="ingredientPanel" pannable="true" prefHeight="470.0" prefWidth="624.0" vbarPolicy="NEVER" BorderPane.alignment="CENTER">
+            <content>
+                <GridPane fx:id="ingredientGridView" gridLinesVisible="true" hgap="20" vgap="10">
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                    </padding></GridPane>
+            </content>
+        </ScrollPane>
+    </bottom>
+</BorderPane>

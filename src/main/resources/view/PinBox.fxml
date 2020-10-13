@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+
+<StackPane alignment="CENTER_LEFT" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+    <stylesheets>
+        <URL value="@Style.css" />
+    </stylesheets>
+    <children>
+        <Rectangle styleClass="pins-background" arcHeight="32.0" arcWidth="48.0"  height="270.0" stroke="BLACK" strokeType="INSIDE" width="290.0" />
+        <TextArea fx:id="pins" maxHeight="262.0" maxWidth="304.0" prefHeight="320.0" prefWidth="290.0" text="\$pins" />
+    </children>
+</StackPane>

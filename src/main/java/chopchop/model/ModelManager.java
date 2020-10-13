@@ -13,6 +13,8 @@ import chopchop.model.ingredient.Ingredient;
 import chopchop.model.ingredient.IngredientBook;
 import chopchop.model.ingredient.ReadOnlyIngredientBook;
 
+import chopchop.model.attributes.Name;
+
 import chopchop.commons.core.GuiSettings;
 import chopchop.commons.core.LogsCenter;
 
@@ -133,6 +135,11 @@ public class ModelManager implements Model {
 
     @Override
     public Optional<Recipe> findRecipeWithName(String name) {
+        return this.findRecipeWithName(new Name(name));
+    }
+
+    @Override
+    public Optional<Recipe> findRecipeWithName(Name name) {
         return this.recipeBook.getFoodEntryList()
             .stream()
             .filter(r -> r.getName().equals(name))
@@ -213,12 +220,16 @@ public class ModelManager implements Model {
 
     @Override
     public Optional<Ingredient> findIngredientWithName(String name) {
+        return this.findIngredientWithName(new Name(name));
+    }
+
+    @Override
+    public Optional<Ingredient> findIngredientWithName(Name name) {
         return this.ingredientBook.getFoodEntryList()
             .stream()
             .filter(r -> r.getName().equals(name))
             .findFirst();
     }
-
 
     //=========== Filtered Ingredient List Accessors =============================================================
 
