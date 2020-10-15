@@ -1,9 +1,9 @@
 package chopchop.model;
 
-import static chopchop.model.Model.PREDICATE_SHOW_ALL_RECIPES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static chopchop.model.Model.PREDICATE_SHOW_ALL_RECIPES;
 import static chopchop.model.Model.PREDICATE_SHOW_ALL_INGREDIENTS;
 import static chopchop.testutil.Assert.assertThrows;
 import static chopchop.testutil.TypicalIngredients.APRICOT;
@@ -13,17 +13,18 @@ import static chopchop.testutil.TypicalRecipes.BANANA_SALAD;
 
 import java.util.Arrays;
 
-import chopchop.testutil.RecipeBookBuilder;
 import org.junit.jupiter.api.Test;
 import chopchop.commons.core.GuiSettings;
 import chopchop.model.attributes.NameContainsKeywordsPredicate;
 import chopchop.model.ingredient.IngredientBook;
 import chopchop.model.recipe.RecipeBook;
 import chopchop.testutil.IngredientBookBuilder;
+import chopchop.testutil.RecipeBookBuilder;
+
 
 public class ModelManagerTest {
 
-    private chopchop.model.ModelManager modelManager = new chopchop.model.ModelManager();
+    private ModelManager modelManager = new ModelManager();
 
     @Test
     public void constructor() {
@@ -78,11 +79,11 @@ public class ModelManagerTest {
     @Test
     public void equals() {
         IngredientBook ingredientBook = new IngredientBookBuilder()
-                                            .withIngredient(APRICOT).withIngredient(BANANA).build();
+            .withIngredient(APRICOT).withIngredient(BANANA).build();
         IngredientBook differentIngredientBook = new IngredientBook();
 
         RecipeBook recipeBook = new RecipeBookBuilder()
-                .withRecipe(APRICOT_SALAD).withRecipe(BANANA_SALAD).build();
+            .withRecipe(APRICOT_SALAD).withRecipe(BANANA_SALAD).build();
 
         RecipeBook differentRecipeBook = new RecipeBook();
 
@@ -104,11 +105,11 @@ public class ModelManagerTest {
 
         // different ingredientBook -> returns false
         assertFalse(modelManager.equals(new ModelManager(
-                                            recipeBook, differentIngredientBook, userPrefs)));
+            recipeBook, differentIngredientBook, userPrefs)));
 
         // different recipeBook -> returns false
         assertFalse(modelManager.equals(new ModelManager(
-                                            differentRecipeBook, ingredientBook, userPrefs)));
+            differentRecipeBook, ingredientBook, userPrefs)));
 
         // different filteredIngredientList -> returns false
         final String[] indKeywords = APRICOT.getName().fullName.split("\\s+");

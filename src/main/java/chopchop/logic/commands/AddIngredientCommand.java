@@ -47,10 +47,6 @@ public class AddIngredientCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
 
-        if (model.hasIngredient(ingredient)) {
-            throw new CommandException(MESSAGE_DUPLICATE_INGREDIENT);
-        }
-
         var foo = model.findIngredientWithName(this.ingredient.getName());
         if (foo.isPresent()) {
             var existing = foo.get();

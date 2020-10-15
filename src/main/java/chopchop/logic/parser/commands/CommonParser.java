@@ -5,6 +5,10 @@ package chopchop.logic.parser.commands;
 import java.util.List;
 import java.util.Optional;
 
+import chopchop.util.Pair;
+import chopchop.util.Result;
+import chopchop.util.StringView;
+
 import chopchop.logic.parser.ArgName;
 import chopchop.logic.parser.CommandArguments;
 
@@ -21,5 +25,33 @@ public class CommonParser {
             .filter(p -> !knownArgs.contains(p.fst()))
             .map(p -> p.fst())
             .findFirst();
+    }
+
+
+    /**
+     * Gets the 'target' of a command, which is either 'ingredient' or 'recipe'. Returns either an error
+     * if the target was invalid or empty, or a pair consisting of the {@code CommandTarget}, and the
+     * rest of the unnamed arguments.
+     */
+    public static Result<Pair<CommandTarget, String>> getCommandTarget(CommandArguments args) {
+        var str = args.getRemaining();
+
+        if (str.isEmpty()) {
+            return Result.error("no target specified (either 'recipe' or 'ingredient')");
+        }
+
+        var x = new StringView(str).bisect(' ').fst().trim();
+        var xs = new StringView(str).bisect(' ').snd().trim();
+
+        // any prefix of "recipes" and "ingredients" can be used.
+        if ("recipes".startsWith(x.toString())) {
+            return Result.of(Pair.of(CommandTarget.RECIPE, xs.toString()));
+        } else if ("ingredients".startsWith(x.toString())) {
+            return Result.of(Pair.of(CommandTarget.INGREDIENT, xs.toString()));
+        } else {
+            return Result.error("unknown target '%s...'",
+                x.takeWhile(c -> !Character.isWhitespace(c))
+            );
+        }
     }
 }

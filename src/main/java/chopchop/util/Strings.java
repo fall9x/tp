@@ -23,6 +23,6 @@ public class Strings {
     public static final String COMMAND_DELETE       = "delete";
 
     // command targets
-    public static final String TARGET_RECIPE        = "recipe";
-    public static final String TARGET_INGREDIENT    = "ingredient";
+    // public static final String TARGET_RECIPE        = "recipe";
+    // public static final String TARGET_INGREDIENT    = "ingredient";
 }

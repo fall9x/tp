@@ -21,7 +21,7 @@ import chopchop.model.recipe.ReadOnlyRecipeBook;
 
 import javafx.collections.ObservableList;
 
-import seedu.address.storage.Storage;
+import chopchop.storage.Storage;
 
 /**
  * The main CommandDispatcher governing the logic in the app.

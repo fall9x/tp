@@ -28,6 +28,7 @@ import chopchop.logic.commands.Command;
 import chopchop.logic.commands.AddRecipeCommand;
 import chopchop.logic.commands.AddIngredientCommand;
 
+import static chopchop.logic.parser.commands.CommonParser.getCommandTarget;
 import static chopchop.logic.parser.commands.CommonParser.getFirstUnknownArgument;
 
 public class AddCommandParser {
@@ -45,44 +46,38 @@ public class AddCommandParser {
             return Result.error("invalid command '%s' (expected '%s')", args.getCommand(), Strings.COMMAND_ADD);
         }
 
-        // java type inference sucks, so lambdas are out of the question.
-        if (args.getTarget().isEmpty()) {
-            return Result.error("'%s' command requires a target (either 'recipe' or 'ingredient')",
-                Strings.COMMAND_ADD);
-        }
+        return getCommandTarget(args)
+            .then(target -> {
+                if (target.snd().isEmpty()) {
+                    return Result.error("recipe or ingredient name cannot be empty");
+                }
 
-        var target = args.getTarget().get();
+                switch (target.fst()) {
+                case RECIPE:
+                    return parseAddRecipeCommand(target.snd().strip(), args);
 
-        if (target.equals(Strings.TARGET_INGREDIENT)) {
-            return parseAddIngredientCommand(args);
-        } else if (target.equals(Strings.TARGET_RECIPE)) {
-            return parseAddRecipeCommand(args);
-        } else {
-            return Result.error("can only add recipes or ingredients ('%s' invalid)", target);
-        }
+                case INGREDIENT:
+                    return parseAddIngredientCommand(target.snd().strip(), args);
+
+                default:
+                    return Result.error("can only add recipes or ingredients ('%s' invalid)", target.fst());
+                }
+            });
     }
 
     /**
      * Parses an 'add ingredient' command. Syntax:
      * {@code add ingredient NAME [/qty QUANTITY] [/expiry DATE]}
      */
-    private static Result<AddIngredientCommand> parseAddIngredientCommand(CommandArguments args) {
-        assert args.getCommand().equals(Strings.COMMAND_ADD)
-            && args.getTarget().equals(Optional.of(Strings.TARGET_INGREDIENT));
-
-        // the non-named argument is the name of the ingredient.
-        if (args.getRemaining().isEmpty()) {
-            return Result.error("ingredient name cannot be empty");
-        }
+    private static Result<AddIngredientCommand> parseAddIngredientCommand(String name, CommandArguments args) {
+        assert args.getCommand().equals(Strings.COMMAND_ADD);
 
         Optional<ArgName> foo;
         if ((foo = getFirstUnknownArgument(args, List.of(Strings.ARG_QUANTITY,
             Strings.ARG_EXPIRY))).isPresent()) {
 
-            return Result.error("unknown argument '%s'", foo.get());
+            return Result.error("'add ingredient' command doesn't support '%s'", foo.get());
         }
-
-        var name = args.getRemaining().get();
 
         var qtys = args.getArgument(Strings.ARG_QUANTITY);
         if (qtys.size() > 1) {
@@ -112,24 +107,15 @@ public class AddCommandParser {
      * Parses an 'add ingredient' command. Syntax:
      * {@code add recipe NAME [/ingredient INGREDIENT_NAME [/qty QTY1]...]... [/step STEP]...}
      */
-    private static Result<AddRecipeCommand> parseAddRecipeCommand(CommandArguments args) {
-        assert args.getCommand().equals(Strings.COMMAND_ADD)
-            && args.getTarget().equals(Optional.of(Strings.TARGET_RECIPE));
-
-        // the non-named argument is the name of the ingredient.
-        if (args.getRemaining().isEmpty()) {
-            return Result.error("recipe name cannot be empty");
-        }
+    private static Result<AddRecipeCommand> parseAddRecipeCommand(String name, CommandArguments args) {
+        assert args.getCommand().equals(Strings.COMMAND_ADD);
 
         Optional<ArgName> foo;
         if ((foo = getFirstUnknownArgument(args, List.of(Strings.ARG_QUANTITY,
             Strings.ARG_INGREDIENT, Strings.ARG_STEP))).isPresent()) {
 
-            return Result.error("unknown argument '%s'", foo.get());
+            return Result.error("'add recipe' command doesn't support '%s'", foo.get());
         }
-
-
-        var name = args.getRemaining().get();
 
         return parseIngredientList(args)
             .map(ingrs -> createAddRecipeCommand(name, ingrs,
