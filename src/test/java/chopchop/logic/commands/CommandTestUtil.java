@@ -16,12 +16,16 @@ import chopchop.model.ingredient.IngredientBook;
 public class CommandTestUtil {
     public static final String VALID_INGREDIENT_NAME_APRICOT = "Apricot";
     public static final String VALID_INGREDIENT_NAME_BANANA = "Banana";
+    public static final String VALID_INGREDIENT_NAME_CUSTARD = "Custard";
     public static final double VALID_INGREDIENT_QTY_APRICOT = 1000000;
     public static final double VALID_INGREDIENT_QTY_BANANA = 17;
+    public static final double VALID_INGREDIENT_QTY_CUSTARD = 18;
     public static final String VALID_INGREDIENT_EXPIRY_APRICOT = "2020-12-01";
     public static final String VALID_INGREDIENT_EXPIRY_BANANA = "2021-10-13";
+    public static final String VALID_INGREDIENT_EXPIRY_CUSTARD = "2020-04-04";
     public static final String VALID_RECIPE_NAME_APRICOT_SALAD = "Apricot Salad";
     public static final String VALID_RECIPE_NAME_BANANA_SALAD = "Banana Salad";
+    public static final String VALID_RECIPE_NAME_CUSTARD_SALAD = "Custard Salad";
 
     /**
      * Executes the given {@code command}, confirms that <br>

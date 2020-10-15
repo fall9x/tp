@@ -18,6 +18,7 @@ import chopchop.logic.commands.FindIngredientCommand;
 
 import chopchop.model.attributes.NameContainsKeywordsPredicate;
 
+import static chopchop.logic.parser.commands.CommonParser.getCommandTarget;
 import static chopchop.logic.parser.commands.CommonParser.getFirstUnknownArgument;
 
 public class FindCommandParser {
@@ -38,39 +39,30 @@ public class FindCommandParser {
             return Result.error("invalid command '%s' (expected '%s')", args.getCommand(), commandName);
         }
 
-        // java type inference sucks, so lambdas are out of the question.
-        if (args.getTarget().isEmpty()) {
-            return Result.error("'%s' command requires a target (either 'recipe' or 'ingredient')",
-                commandName);
-        }
-
-        // hold on to this first; validate it later.
-        var target = args.getTarget().get();
-
-        var words = args.getRemaining()
-            .map(x -> new StringView(x).words())
-            .orElse(new ArrayList<>());
-
-        if (words.isEmpty()) {
-            return Result.error("'%s' command requires at least one search term", commandName);
-        }
-
         // we expect no named arguments
         Optional<ArgName> foo;
         if ((foo = getFirstUnknownArgument(args, new ArrayList<>())).isPresent()) {
-            return Result.error("unknown argument '%s'", foo.get());
+            return Result.error("'find' command doesn't support '%s'", foo.get());
         }
 
-        if (target.equals(Strings.TARGET_INGREDIENT)) {
+        return getCommandTarget(args)
+            .then(target -> {
+                var words = new StringView(target.snd()).words();
 
-            return Result.of(new FindIngredientCommand(new NameContainsKeywordsPredicate(words)));
+                if (words.isEmpty()) {
+                    return Result.error("'%s' command requires at least one search term", commandName);
+                }
 
-        } else if (target.equals(Strings.TARGET_RECIPE)) {
+                switch (target.fst()) {
+                case RECIPE:
+                    return Result.of(new FindRecipeCommand(new NameContainsKeywordsPredicate(words)));
 
-            return Result.of(new FindRecipeCommand(new NameContainsKeywordsPredicate(words)));
+                case INGREDIENT:
+                    return Result.of(new FindIngredientCommand(new NameContainsKeywordsPredicate(words)));
 
-        } else {
-            return Result.error("can only find recipes or ingredients ('%s' invalid)", target);
-        }
+                default:
+                    return Result.error("can only find recipes or ingredients ('%s' invalid)", target.fst());
+                }
+            });
     }
 }

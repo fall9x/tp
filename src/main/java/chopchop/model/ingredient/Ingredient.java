@@ -90,7 +90,7 @@ public class Ingredient extends FoodEntry {
         Ingredient otherInd = (Ingredient) other;
 
         return otherInd.getName().equals(getName())
-            && otherInd.getExpiryDate().equals(getExpiryDate());
+            && otherInd.getExpiryDate().get().equals(getExpiryDate().get());
     }
 
     @Override

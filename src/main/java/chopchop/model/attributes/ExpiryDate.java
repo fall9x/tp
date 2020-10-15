@@ -53,6 +53,12 @@ public class ExpiryDate {
         return this.date.toString();
     }
 
+    @Override
+    public boolean equals(Object other) {
+        return other == this // short circuit if same object
+            || (other instanceof ExpiryDate // instanceof handles nulls
+            && this.date.equals(((ExpiryDate) other).date));
+    }
     /**
      * Creates an expiry date far in the future, to represent food that either doesn't expire,
      * or where the expiry date was not given.

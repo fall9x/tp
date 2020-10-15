@@ -1,6 +1,5 @@
 package chopchop.logic.commands;
 
-import static chopchop.logic.commands.CommandTestUtil.assertCommandFailure;
 import static chopchop.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static chopchop.testutil.TypicalIngredients.getTypicalIngredientBook;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +20,7 @@ public class AddIngredientCommandIntTest {
     }
 
     @Test
-    public void execute_newPerson_success() {
+    public void execute_newIngredient_success() {
         Ingredient validIngredient = new IngredientBuilder().build();
 
         Model expectedModel = new ModelManager(new RecipeBook(), model.getIngredientBook(), new UserPrefs());
@@ -30,12 +29,4 @@ public class AddIngredientCommandIntTest {
         assertCommandSuccess(new AddIngredientCommand(validIngredient), model,
             String.format(AddIngredientCommand.MESSAGE_SUCCESS, validIngredient), expectedModel);
     }
-
-    @Test
-    public void execute_duplicatePerson_throwsCommandException() {
-        Ingredient personInList = model.getIngredientBook().getFoodEntryList().get(0);
-        assertCommandFailure(new AddIngredientCommand(personInList), model,
-            AddIngredientCommand.MESSAGE_DUPLICATE_INGREDIENT);
-    }
-
 }

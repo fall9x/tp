@@ -3,7 +3,6 @@
 package chopchop.logic.parser;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.ArrayList;
 
 import chopchop.util.Pair;
@@ -74,27 +73,7 @@ public class CommandParser {
 
         sv.bisect(x, ' ', xs);
 
-        /*
-            add recipe NAME [/ingredient INGREDIENT [/qty QTY1]...]... [/step STEP]...
-            delete recipe NAME
-            find recipe KEYWORDS [MORE_KEYWORDS]
-            list recipes
-            make RECIPE_NAME [/qty TIMES]
-
-            add ingredient NAME [/qty QUANTITY] [/expiry DATE]
-            use ingredient NAME [/qty QUANTITY]
-            find ingredient KEYWORDS [MORE_KEYWORDS]
-            list ingredients
-        */
-
         var command = x.toString().strip();
-        xs.bisect(x, ' ', xs);
-
-        var target = Optional.of(x)
-            .filter(s -> !s.isEmpty())
-            .map(StringView::toString)
-            .map(String::strip)
-            .orElse(null);
 
         xs.bisect(x, '/', xs);
         var theRest = x.toString().strip();
@@ -105,7 +84,7 @@ public class CommandParser {
         }
 
         return this.parseNamedArguments(xs)
-            .map(args -> new CommandArguments(command, target, theRest, args));
+            .map(args -> new CommandArguments(command, theRest, args));
     }
 
 

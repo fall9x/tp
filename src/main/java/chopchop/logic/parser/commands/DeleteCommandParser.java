@@ -16,6 +16,7 @@ import chopchop.logic.commands.Command;
 import chopchop.logic.commands.DeleteRecipeCommand;
 import chopchop.logic.commands.DeleteIngredientCommand;
 
+import static chopchop.logic.parser.commands.CommonParser.getCommandTarget;
 import static chopchop.logic.parser.commands.CommonParser.getFirstUnknownArgument;
 
 public class DeleteCommandParser {
@@ -36,44 +37,39 @@ public class DeleteCommandParser {
             return Result.error("invalid command '%s' (expected '%s')", args.getCommand(), commandName);
         }
 
-        // java type inference sucks, so lambdas are out of the question.
-        if (args.getTarget().isEmpty()) {
-            return Result.error("'%s' command requires a target (either 'recipe' or 'ingredient')",
-                commandName);
+        // we expect no named arguments
+        Optional<ArgName> foo;
+        if ((foo = getFirstUnknownArgument(args, new ArrayList<>())).isPresent()) {
+            return Result.error("'delete' command doesn't support '%s'", foo.get());
         }
 
-        var target = args.getTarget().get();
+        return getCommandTarget(args)
+            .then(target -> {
+                if (target.snd().isEmpty()) {
+                    return Result.error("recipe or ingredient name cannot be empty");
+                }
 
-        if (target.equals(Strings.TARGET_INGREDIENT)) {
-            return parseDeleteIngredientCommand(args);
-        } else if (target.equals(Strings.TARGET_RECIPE)) {
-            return parseDeleteRecipeCommand(args);
-        } else {
-            return Result.error("can only delete recipes or ingredients ('%s' invalid)", target);
-        }
+                switch (target.fst()) {
+                case RECIPE:
+                    return parseDeleteRecipeCommand(target.snd().strip(), args);
+
+                case INGREDIENT:
+                    return parseDeleteIngredientCommand(target.snd().strip(), args);
+
+                default:
+                    return Result.error("can only add recipes or ingredients ('%s' invalid)", target.fst());
+                }
+            });
     }
 
     /**
      * Parses a 'delete ingredient' command. Syntax:
      * {@code delete ingredient REF}
      */
-    private static Result<DeleteIngredientCommand> parseDeleteIngredientCommand(CommandArguments args) {
-        assert args.getCommand().equals(commandName)
-            && args.getTarget().equals(Optional.of(Strings.TARGET_INGREDIENT));
+    private static Result<DeleteIngredientCommand> parseDeleteIngredientCommand(String name, CommandArguments args) {
+        assert args.getCommand().equals(commandName);
 
-        // the non-named argument is the name of the ingredient.
-        if (args.getRemaining().isEmpty()) {
-            return Result.error("ingredient name cannot be empty");
-        }
-
-        // we expect no named arguments
-        Optional<ArgName> foo;
-        if ((foo = getFirstUnknownArgument(args, new ArrayList<>())).isPresent()) {
-            return Result.error("unknown argument '%s'", foo.get());
-        }
-
-        var ref = args.getRemaining().get();
-        return ItemReference.parse(ref)
+        return ItemReference.parse(name)
             .map(DeleteIngredientCommand::new);
     }
 
@@ -81,23 +77,10 @@ public class DeleteCommandParser {
      * Parses a 'delete recipe' command. Syntax:
      * {@code delete recipe REF}
      */
-    private static Result<DeleteRecipeCommand> parseDeleteRecipeCommand(CommandArguments args) {
-        assert args.getCommand().equals(commandName)
-            && args.getTarget().equals(Optional.of(Strings.TARGET_RECIPE));
+    private static Result<DeleteRecipeCommand> parseDeleteRecipeCommand(String name, CommandArguments args) {
+        assert args.getCommand().equals(commandName);
 
-        // the non-named argument is the name of the ingredient.
-        if (args.getRemaining().isEmpty()) {
-            return Result.error("recipe name cannot be empty");
-        }
-
-        // we expect no named arguments
-        Optional<ArgName> foo;
-        if ((foo = getFirstUnknownArgument(args, new ArrayList<>())).isPresent()) {
-            return Result.error("unknown argument '%s'", foo.get());
-        }
-
-        var ref = args.getRemaining().get();
-        return ItemReference.parse(ref)
+        return ItemReference.parse(name)
             .map(DeleteRecipeCommand::new);
     }
 }

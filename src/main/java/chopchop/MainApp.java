@@ -5,6 +5,16 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.logging.Logger;
 
+import chopchop.model.ingredient.IngredientBook;
+import chopchop.model.ingredient.ReadOnlyIngredientBook;
+import chopchop.model.recipe.ReadOnlyRecipeBook;
+import chopchop.model.recipe.RecipeBook;
+import chopchop.model.util.SampleDataUtil;
+import chopchop.storage.IngredientBookStorage;
+import chopchop.storage.JsonIngredientBookStorage;
+import chopchop.storage.JsonRecipeBookStorage;
+import chopchop.storage.RecipeBookStorage;
+import chopchop.ui.UiManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import chopchop.commons.core.Config;
@@ -19,19 +29,11 @@ import chopchop.model.Model;
 import chopchop.model.ModelManager;
 import chopchop.model.ReadOnlyUserPrefs;
 import chopchop.model.UserPrefs;
+import chopchop.storage.JsonUserPrefsStorage;
+import chopchop.storage.Storage;
+import chopchop.storage.StorageManager;
+import chopchop.storage.UserPrefsStorage;
 import chopchop.ui.Ui;
-import chopchop.ui.UiManager;
-/*
-import seedu.address.model.AddressBook;
-import seedu.address.model.ReadOnlyAddressBook;
-import seedu.address.model.util.SampleDataUtil;
-import seedu.address.storage.AddressBookStorage;
-import seedu.address.storage.JsonAddressBookStorage;
- */
-import seedu.address.storage.JsonUserPrefsStorage;
-import seedu.address.storage.Storage;
-//import seedu.address.storage.StorageManager;
-import seedu.address.storage.UserPrefsStorage;
 
 
 /**
@@ -42,7 +44,6 @@ public class MainApp extends Application {
     public static final Version VERSION = new Version(0, 6, 0, true);
 
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
-
     protected Ui ui;
     protected Logic logic;
     protected Storage storage;
@@ -59,10 +60,10 @@ public class MainApp extends Application {
 
         UserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(config.getUserPrefsFilePath());
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
-        /*
-        AddressBookStorage addressBookStorage = new JsonAddressBookStorage(userPrefs.getAddressBookFilePath());
-        storage = new StorageManager(addressBookStorage, userPrefsStorage);
-         */
+        IngredientBookStorage ingredientBookStorage =
+            new JsonIngredientBookStorage(userPrefs.getIngredientBookFilePath());
+        RecipeBookStorage recipeBookStorage = new JsonRecipeBookStorage(userPrefs.getRecipeBookFilePath());
+        storage = new StorageManager(ingredientBookStorage, recipeBookStorage, userPrefsStorage);
 
         initLogging(config);
 
@@ -71,35 +72,45 @@ public class MainApp extends Application {
         logic = new CommandDispatcher(model, storage);
 
         ui = new UiManager(logic);
-    }
 
+    }
     /**
-     * Returns a {@code ModelManager} with the data from {@code storage}'s address book and {@code userPrefs}. <br>
-     * The data from the sample address book will be used instead if {@code storage}'s address book is not found,
-     * or an empty address book will be used instead if errors occur when reading {@code storage}'s address book.
+     * Returns a {@code ModelManager} with the data from {@code storage}'s ingredient and recipe book
+     * and {@code userPrefs}. <br>
+     * The data from the sample ingredient or recipe book will be used instead if {@code storage}'s
+     * ingredient or recipe book is not found,
+     * or an empty ingredient or recipe book will be used instead if errors occur when reading
+     * {@code storage}'s ingredient or recipe book.
      */
     private Model initModelManager(Storage storage, ReadOnlyUserPrefs userPrefs) {
-        /*
-        Optional<ReadOnlyAddressBook> addressBookOptional;
-        ReadOnlyAddressBook initialData;
+
+        Optional<ReadOnlyIngredientBook> ingredientBookOptional;
+        Optional<ReadOnlyRecipeBook> recipeBookOptional;
+        ReadOnlyIngredientBook initialIndData;
+        ReadOnlyRecipeBook initialRecData;
+
         try {
-            addressBookOptional = storage.readAddressBook();
-            if (!addressBookOptional.isPresent()) {
-                logger.info("Data file not found. Will be starting with a sample AddressBook");
+            ingredientBookOptional = storage.readIngredientBook();
+            if (!ingredientBookOptional.isPresent()) {
+                logger.info("Data file for ingredient book not found. Will be starting with a sample IndBook");
             }
-            initialData = addressBookOptional.orElseGet(SampleDataUtil::getSampleAddressBook);
+            recipeBookOptional = storage.readRecipeBook();
+            initialIndData = ingredientBookOptional.orElseGet(SampleDataUtil::getSampleIngredientBook);
+            if (!recipeBookOptional.isPresent()) {
+                logger.info("Data file for recipe book not found. Will be starting with a sample RecBook");
+            }
+            initialRecData = recipeBookOptional.orElseGet(SampleDataUtil::getSampleRecipeBook);
         } catch (DataConversionException e) {
             logger.warning("Data file not in the correct format. Will be starting with an empty AddressBook");
-            initialData = new AddressBook();
+            initialIndData = new IngredientBook();
+            initialRecData = new RecipeBook();
         } catch (IOException e) {
             logger.warning("Problem while reading from the file. Will be starting with an empty AddressBook");
-            initialData = new AddressBook();
+            initialIndData = new IngredientBook();
+            initialRecData = new RecipeBook();
         }
 
-        return new ModelManager(initialData, userPrefs);
-
-         */
-        return new ModelManager();
+        return new ModelManager(initialRecData, initialIndData, userPrefs);
     }
 
     private void initLogging(Config config) {
@@ -129,7 +140,7 @@ public class MainApp extends Application {
             initializedConfig = configOptional.orElse(new Config());
         } catch (DataConversionException e) {
             logger.warning("Config file at " + configFilePathUsed + " is not in the correct format. "
-                    + "Using default config properties");
+                + "Using default config properties");
             initializedConfig = new Config();
         }
 
@@ -152,13 +163,13 @@ public class MainApp extends Application {
         logger.info("Using prefs file : " + prefsFilePath);
 
         UserPrefs initializedPrefs;
-        /*
+
         try {
             Optional<UserPrefs> prefsOptional = storage.readUserPrefs();
             initializedPrefs = prefsOptional.orElse(new UserPrefs());
         } catch (DataConversionException e) {
             logger.warning("UserPrefs file at " + prefsFilePath + " is not in the correct format. "
-                    + "Using default user prefs");
+                + "Using default user prefs");
             initializedPrefs = new UserPrefs();
         } catch (IOException e) {
             logger.warning("Problem while reading from the file. Will be starting with an empty AddressBook");
@@ -172,8 +183,6 @@ public class MainApp extends Application {
             logger.warning("Failed to save config file : " + StringUtil.getDetails(e));
         }
 
-         */
-        // stub code
         initializedPrefs = new UserPrefs();
         return initializedPrefs;
     }
@@ -184,7 +193,6 @@ public class MainApp extends Application {
         ui.start(primaryStage);
     }
 
-    /*
     @Override
     public void stop() {
         logger.info("============================ [ Stopping Address Book ] =============================");
@@ -194,5 +202,4 @@ public class MainApp extends Application {
             logger.severe("Failed to save preferences " + StringUtil.getDetails(e));
         }
     }
-     */
 }

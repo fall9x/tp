@@ -3,7 +3,6 @@
 package chopchop.logic.parser;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -12,7 +11,6 @@ import chopchop.util.Pair;
 /**
  * A container class to hold a parsed command, holding its:
  * - name
- * - target
  * - unnamed arguments
  * - named arguments
  *
@@ -22,8 +20,7 @@ import chopchop.util.Pair;
  * Would have the following properties:
  * {@code
  *      command     = "add"
- *      target      = "ingredient"
- *      remaining   = "onions"
+ *      remaining   = "ingredient onions"
  *      arguments   = [
  *                      ("quantity", "500g"),
  *                      ("location", "fridge"),
@@ -41,7 +38,6 @@ import chopchop.util.Pair;
 public class CommandArguments {
 
     private final String command;
-    private final String target;
     private final String remaining;
     private final List<Pair<ArgName, String>> arguments;
 
@@ -52,8 +48,7 @@ public class CommandArguments {
      */
     public CommandArguments(String command) {
         this.command    = command;
-        this.target     = null;
-        this.remaining  = null;
+        this.remaining  = "";
         this.arguments  = new ArrayList<>();
     }
 
@@ -66,23 +61,7 @@ public class CommandArguments {
      */
     public CommandArguments(String command, List<Pair<ArgName, String>> arguments) {
         this.command    = command;
-        this.target     = null;
-        this.remaining  = null;
-        this.arguments  = new ArrayList<>(arguments);
-    }
-
-    /**
-     * Constructs a set of command arguments consisting of the command name, the command
-     * target, and some number of named arguments.
-     *
-     * @param command   the name of the command
-     * @param target    the command target
-     * @param arguments a map of named arguments and their values
-     */
-    public CommandArguments(String command, String target, List<Pair<ArgName, String>> arguments) {
-        this.command    = command;
-        this.target     = target;
-        this.remaining  = null;
+        this.remaining  = "";
         this.arguments  = new ArrayList<>(arguments);
     }
 
@@ -91,15 +70,12 @@ public class CommandArguments {
      * target, any remaining non-named arguments, and some number of named arguments.
      *
      * @param command   the name of the command
-     * @param target    the command target
      * @param remaining any remaining non-named arguments
      * @param arguments a map of named arguments and their values
      */
-    public CommandArguments(String command, String target, String remaining,
-        List<Pair<ArgName, String>> arguments) {
+    public CommandArguments(String command, String remaining, List<Pair<ArgName, String>> arguments) {
 
         this.command    = command;
-        this.target     = target;
         this.remaining  = remaining;
         this.arguments  = new ArrayList<>(arguments);
     }
@@ -108,12 +84,8 @@ public class CommandArguments {
         return this.command;
     }
 
-    public Optional<String> getTarget() {
-        return Optional.ofNullable(this.target);
-    }
-
-    public Optional<String> getRemaining() {
-        return Optional.ofNullable(this.remaining);
+    public String getRemaining() {
+        return this.remaining;
     }
 
     /**

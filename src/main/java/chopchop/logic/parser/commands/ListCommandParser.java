@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import chopchop.util.Result;
 import chopchop.util.Strings;
-import chopchop.util.StringView;
 
 import chopchop.logic.parser.ArgName;
 import chopchop.logic.parser.CommandArguments;
@@ -16,6 +15,7 @@ import chopchop.logic.commands.Command;
 import chopchop.logic.commands.ListRecipeCommand;
 import chopchop.logic.commands.ListIngredientCommand;
 
+import static chopchop.logic.parser.commands.CommonParser.getCommandTarget;
 import static chopchop.logic.parser.commands.CommonParser.getFirstUnknownArgument;
 
 public class ListCommandParser {
@@ -36,37 +36,24 @@ public class ListCommandParser {
             return Result.error("invalid command '%s' (expected '%s')", args.getCommand(), commandName);
         }
 
-        // java type inference sucks, so lambdas are out of the question.
-        if (args.getTarget().isEmpty()) {
-            return Result.error("'%s' command requires a target (either 'recipe' or 'ingredient')",
-                commandName);
-        }
-
-        // hold on to this first; validate it later.
-        var target = args.getTarget().get();
-
-        // just do this to make an error message.
-        if (!args.getRemaining().isEmpty()) {
-            return Result.error("'%s' command takes no arguments (found '%s...')", commandName,
-                new StringView(args.getRemaining().get()).take(7));
-        }
-
         // we expect no named arguments
         Optional<ArgName> foo;
         if ((foo = getFirstUnknownArgument(args, new ArrayList<>())).isPresent()) {
-            return Result.error("unknown argument '%s'", foo.get());
+            return Result.error("'list' command doesn't support '%s'", foo.get());
         }
 
-        if (target.equals(Strings.TARGET_INGREDIENT)) {
+        return getCommandTarget(args)
+            .then(target -> {
+                switch (target.fst()) {
+                case RECIPE:
+                    return Result.of(new ListRecipeCommand());
 
-            return Result.of(new ListIngredientCommand());
+                case INGREDIENT:
+                    return Result.of(new ListIngredientCommand());
 
-        } else if (target.equals(Strings.TARGET_RECIPE)) {
-
-            return Result.of(new ListRecipeCommand());
-
-        } else {
-            return Result.error("can only list recipes or ingredients ('%s' invalid)", target);
-        }
+                default:
+                    return Result.error("can only list recipes or ingredients ('%s' invalid)", target.fst());
+                }
+            });
     }
 }

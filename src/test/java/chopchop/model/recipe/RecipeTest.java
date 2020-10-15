@@ -4,7 +4,6 @@ import static chopchop.testutil.TypicalRecipes.APRICOT_SALAD;
 import static chopchop.testutil.TypicalRecipes.BANANA_SALAD;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
 
 import chopchop.testutil.IngredientBuilder;
 import chopchop.testutil.RecipeBuilder;
@@ -31,7 +30,7 @@ public class RecipeTest {
         assertFalse(APRICOT_SALAD.equals(BANANA_SALAD));
 
         // different name -> returns false
-        Recipe editedApricotSalad = new RecipeBuilder(APRICOT_SALAD).withName(VALID_NAME_BOB).build();
+        Recipe editedApricotSalad = new RecipeBuilder(APRICOT_SALAD).withName("DD").build();
         assertFalse(APRICOT_SALAD.equals(editedApricotSalad));
     }
 }

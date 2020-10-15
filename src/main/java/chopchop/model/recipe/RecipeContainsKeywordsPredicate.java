@@ -1,6 +1,6 @@
 package chopchop.model.recipe;
 
-import seedu.address.commons.util.StringUtil;
+import chopchop.commons.util.StringUtil;
 
 import java.util.List;
 import java.util.function.Predicate;
