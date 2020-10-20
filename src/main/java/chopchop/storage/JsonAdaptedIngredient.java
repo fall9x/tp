@@ -2,40 +2,33 @@ package chopchop.storage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import chopchop.commons.exceptions.IllegalValueException;
-import chopchop.model.attributes.ExpiryDate;
 import chopchop.model.attributes.Name;
-import chopchop.model.attributes.Quantity;
 import chopchop.model.ingredient.Ingredient;
-import chopchop.util.Result;
 
 public class JsonAdaptedIngredient {
-    public static final String IND_MISSING_FIELD_MESSAGE_FORMAT = "Ingredients's %s field is missing!";
+    public static final String INGREDIENT_MISSING_FIELD_MESSAGE_FORMAT = "Ingredient's %s field is missing!";
 
     private final String name;
-    private final String expiry;
-    private final String qty;
+    private final JsonAdaptedIngredientSet sets;
 
     /**
      * Constructs a {@code JsonAdaptedIngredient} with the given ingredient details.
      */
     @JsonCreator
-    public JsonAdaptedIngredient(@JsonProperty("name") String name, @JsonProperty("quantity") String qty,
-                             @JsonProperty("expiry") String expiry) {
+    public JsonAdaptedIngredient(@JsonProperty("name") String name,
+                                 @JsonProperty("sets") JsonAdaptedIngredientSet sets) {
         this.name = name;
-        this.qty = qty;
-        this.expiry = expiry;
+        this.sets = sets;
     }
 
     /**
      * Converts a given {@code Ingredient} into this class for Jackson use.
      */
     public JsonAdaptedIngredient(Ingredient source) {
-        name = source.getName().fullName;
-        qty = source.getQuantity().toString();
-        expiry = source.getExpiryDate().isPresent()
-            ? source.getExpiryDate().get().toString()
-            : null;
+        this.name = source.getName();
+        this.sets = new JsonAdaptedIngredientSet(source.getIngredientSets());
     }
 
     /**
@@ -44,34 +37,18 @@ public class JsonAdaptedIngredient {
      * @throws IllegalValueException if there were any data constraints violated in the adapted ingredient.
      */
     public Ingredient toModelType() throws IllegalValueException {
-
-        if (name == null) {
-            throw new IllegalValueException(String.format(IND_MISSING_FIELD_MESSAGE_FORMAT,
+        if (this.name == null) {
+            throw new IllegalValueException(String.format(INGREDIENT_MISSING_FIELD_MESSAGE_FORMAT,
                 Name.class.getSimpleName()));
         }
-        if (!Name.isValidName(name)) {
+        if (!Name.isValidName(this.name)) {
             throw new IllegalValueException(Name.MESSAGE_CONSTRAINTS);
         }
-        final Name modelName = new Name(name);
 
-        if (expiry == null) {
-            throw new IllegalValueException(String.format(IND_MISSING_FIELD_MESSAGE_FORMAT,
-                ExpiryDate.class.getSimpleName()));
-        }
-        if (!ExpiryDate.isValidDate(expiry)) {
-            throw new IllegalValueException(ExpiryDate.MESSAGE_CONSTRAINTS);
-        }
-        final ExpiryDate modelExpiry = new ExpiryDate(expiry);
-
-        if (qty == null) {
-            throw new IllegalValueException(String.format(IND_MISSING_FIELD_MESSAGE_FORMAT,
-                Quantity.class.getSimpleName()));
-        }
-        Result<Quantity> qtyResult = Quantity.parse(qty);
-        if (qtyResult.isError()) {
-            throw new IllegalValueException(qtyResult.getError());
+        if (this.sets == null) {
+            throw new IllegalValueException(String.format(INGREDIENT_MISSING_FIELD_MESSAGE_FORMAT, "sets"));
         }
 
-        return new Ingredient(modelName, qtyResult.getValue(), modelExpiry);
+        return new Ingredient(this.name, this.sets.toModelType());
     }
 }

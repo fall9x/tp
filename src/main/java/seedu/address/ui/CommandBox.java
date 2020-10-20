@@ -22,7 +22,7 @@ public class CommandBox extends UiPart<Region> {
     private TextField commandTextField;
 
     /**
-     * Constructs {@code CommandBox}
+     * Creates a {@code CommandBox} with the given {@code CommandExecutor}.
      */
     public CommandBox(CommandExecutor commandExecutor) {
         super(FXML);

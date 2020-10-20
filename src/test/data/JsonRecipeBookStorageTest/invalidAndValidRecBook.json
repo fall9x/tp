@@ -2,10 +2,10 @@
   "recipes": [ {
     "name": "Valid Recipe",
     "ingredients": ["Apple (14g)"],
-    "steps": ["CUT"],
+    "steps": ["CUT"]
   }, {
-    "name": "Person With Invalid ingredient Field",
-    "ingredients": [""],
-    "steps": ["CUT"],
+    "name": "Person With Invalid ingredient Field"
+    "ingredients": [""]
+    "steps": ["CUT"]
   } ]
 }

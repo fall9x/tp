@@ -1,15 +1,15 @@
 package chopchop.ui;
 
+import static java.util.Objects.requireNonNull;
+
+import chopchop.logic.commands.CommandResult;
+import chopchop.logic.commands.exceptions.CommandException;
+import chopchop.logic.parser.exceptions.ParseException;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Region;
-import chopchop.logic.commands.CommandResult;
-import chopchop.logic.commands.exceptions.CommandException;
-import chopchop.logic.parser.exceptions.ParseException;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * The UI component that is responsible for receiving user command inputs.

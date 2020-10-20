@@ -1,5 +1,3 @@
-// Quantity.java
-
 package chopchop.model.attributes;
 
 import java.util.List;

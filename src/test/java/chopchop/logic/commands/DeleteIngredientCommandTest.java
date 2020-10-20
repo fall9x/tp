@@ -1,10 +1,10 @@
 package chopchop.logic.commands;
 
 import chopchop.commons.core.Messages;
+import chopchop.model.EntryBook;
 import chopchop.model.Model;
 import chopchop.model.ModelManager;
 import chopchop.model.UserPrefs;
-import chopchop.model.recipe.RecipeBook;
 import chopchop.logic.parser.ItemReference;
 
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ import static chopchop.testutil.TypicalIngredients.getTypicalIngredientBook;
 
 public class DeleteIngredientCommandTest {
 
-    private Model model = new ModelManager(new RecipeBook(), getTypicalIngredientBook(), new UserPrefs());
+    private Model model = new ModelManager(new EntryBook<>(), getTypicalIngredientBook(), new UserPrefs());
 
     @Test
     public void execute_validIndexUnfilteredList_success() {
@@ -29,7 +29,7 @@ public class DeleteIngredientCommandTest {
 
         String expectedMessage = String.format(DeleteIngredientCommand.MESSAGE_DELETE_INGREDIENT_SUCCESS, indToDelete);
 
-        var expectedModel = new ModelManager(new RecipeBook(), model.getIngredientBook(), new UserPrefs());
+        var expectedModel = new ModelManager(new EntryBook<>(), model.getIngredientBook(), new UserPrefs());
         expectedModel.deleteIngredient(indToDelete);
 
         assertCommandSuccess(deleteCommand, model, expectedMessage, expectedModel);
@@ -52,7 +52,7 @@ public class DeleteIngredientCommandTest {
 
         var expectedMessage = String.format(DeleteIngredientCommand.MESSAGE_DELETE_INGREDIENT_SUCCESS, indToDelete);
 
-        var expectedModel = new ModelManager(new RecipeBook(), model.getIngredientBook(), new UserPrefs());
+        var expectedModel = new ModelManager(new EntryBook<>(), model.getIngredientBook(), new UserPrefs());
         expectedModel.deleteIngredient(indToDelete);
         showNoIngredient(expectedModel);
 
@@ -65,7 +65,7 @@ public class DeleteIngredientCommandTest {
 
         var outOfBoundIndex = INDEXED_SECOND;
         // ensures that outOfBoundIndex is still in bounds of ingredient book list
-        assertTrue(outOfBoundIndex.getZeroIndex() < model.getIngredientBook().getFoodEntryList().size());
+        assertTrue(outOfBoundIndex.getZeroIndex() < model.getIngredientBook().getEntryList().size());
 
         DeleteIngredientCommand deleteCommand = new DeleteIngredientCommand(outOfBoundIndex);
 

@@ -4,10 +4,10 @@ import java.util.logging.Logger;
 
 import chopchop.commons.core.GuiSettings;
 import chopchop.commons.core.LogsCenter;
+import chopchop.logic.Logic;
 import chopchop.logic.commands.CommandResult;
 import chopchop.logic.commands.exceptions.CommandException;
 import chopchop.logic.parser.exceptions.ParseException;
-import chopchop.logic.Logic;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;

@@ -1,11 +1,15 @@
 {
   "ingredients": [ {
     "name": "Valid Ind",
-    "quantity": "9482424",
-    "date": "2020-04-04"
+    "sets": [
+        {
+            "quantity": "9482424",
+            "expiryDate": "2020-04-04"
+        }
+    ]
   }, {
     "name": "Ind With Invalid qty Field",
     "quantity": "",
-    "date": "20202-04-04"
+    "expiryDate": "20202-04-04"
   } ]
 }

@@ -1,5 +1,3 @@
-// HelpCommand.java
-
 package chopchop.logic.commands;
 
 import chopchop.model.Model;

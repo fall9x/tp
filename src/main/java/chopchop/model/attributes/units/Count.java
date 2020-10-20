@@ -1,5 +1,3 @@
-// Count.java
-
 package chopchop.model.attributes.units;
 
 import chopchop.util.Result;

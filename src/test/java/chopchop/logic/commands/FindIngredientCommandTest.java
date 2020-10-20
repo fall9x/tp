@@ -10,16 +10,17 @@ import static chopchop.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static chopchop.testutil.TypicalIngredients.getTypicalIngredientBook;
 import java.util.Arrays;
 import java.util.Collections;
+
+import chopchop.model.EntryBook;
 import org.junit.jupiter.api.Test;
 import chopchop.model.Model;
 import chopchop.model.ModelManager;
 import chopchop.model.UserPrefs;
 import chopchop.model.attributes.NameContainsKeywordsPredicate;
-import chopchop.model.recipe.RecipeBook;
 
 public class FindIngredientCommandTest {
-    private Model model = new ModelManager(new RecipeBook(), getTypicalIngredientBook(), new UserPrefs());
-    private Model expectedModel = new ModelManager(new RecipeBook(), getTypicalIngredientBook(), new UserPrefs());
+    private Model model = new ModelManager(new EntryBook<>(), getTypicalIngredientBook(), new UserPrefs());
+    private Model expectedModel = new ModelManager(new EntryBook<>(), getTypicalIngredientBook(), new UserPrefs());
 
     @Test
     public void equals() {

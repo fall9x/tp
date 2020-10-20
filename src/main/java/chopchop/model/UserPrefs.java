@@ -5,15 +5,14 @@ import static java.util.Objects.requireNonNull;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+
 import chopchop.commons.core.GuiSettings;
 
 /**
  * Represents User's preferences.
  */
 public class UserPrefs implements ReadOnlyUserPrefs {
-
     private GuiSettings guiSettings = new GuiSettings();
-
     private Path ingredientBookFilePath = Paths.get("data" , "ingredientbook.json");
     private Path recipeBookFilePath = Paths.get("data" , "recipebook.json");
 
@@ -27,7 +26,7 @@ public class UserPrefs implements ReadOnlyUserPrefs {
      */
     public UserPrefs(ReadOnlyUserPrefs userPrefs) {
         this();
-        resetData(userPrefs);
+        this.resetData(userPrefs);
     }
 
     /**
@@ -35,13 +34,14 @@ public class UserPrefs implements ReadOnlyUserPrefs {
      */
     public void resetData(ReadOnlyUserPrefs newUserPrefs) {
         requireNonNull(newUserPrefs);
-        setGuiSettings(newUserPrefs.getGuiSettings());
-        setIngredientBookFilePath(newUserPrefs.getIngredientBookFilePath());
-        setRecipeBookFilePath(newUserPrefs.getRecipeBookFilePath());
+        this.setGuiSettings(newUserPrefs.getGuiSettings());
+        this.setIngredientBookFilePath(newUserPrefs.getIngredientBookFilePath());
+        this.setRecipeBookFilePath(newUserPrefs.getRecipeBookFilePath());
     }
 
+    @Override
     public GuiSettings getGuiSettings() {
-        return guiSettings;
+        return this.guiSettings;
     }
 
     public void setGuiSettings(GuiSettings guiSettings) {
@@ -49,22 +49,24 @@ public class UserPrefs implements ReadOnlyUserPrefs {
         this.guiSettings = guiSettings;
     }
 
+    @Override
     public Path getIngredientBookFilePath() {
-        return ingredientBookFilePath;
+        return this.ingredientBookFilePath;
     }
 
+    @Override
     public Path getRecipeBookFilePath() {
         return this.recipeBookFilePath;
     }
 
-    public void setIngredientBookFilePath(Path bookFilePath) {
-        requireNonNull(bookFilePath);
-        this.ingredientBookFilePath = bookFilePath;
+    public void setIngredientBookFilePath(Path ingredientBookFilePath) {
+        requireNonNull(ingredientBookFilePath);
+        this.ingredientBookFilePath = ingredientBookFilePath;
     }
 
-    public void setRecipeBookFilePath(Path bookFilePath) {
-        requireNonNull(bookFilePath);
-        this.recipeBookFilePath = bookFilePath;
+    public void setRecipeBookFilePath(Path recipeBookFilePath) {
+        requireNonNull(recipeBookFilePath);
+        this.recipeBookFilePath = recipeBookFilePath;
     }
 
     @Override
@@ -78,22 +80,22 @@ public class UserPrefs implements ReadOnlyUserPrefs {
 
         UserPrefs o = (UserPrefs) other;
 
-        return guiSettings.equals(o.guiSettings)
-            && ingredientBookFilePath.equals(o.ingredientBookFilePath)
-            && recipeBookFilePath.equals(o.recipeBookFilePath);
+        return this.guiSettings.equals(o.guiSettings)
+            && this.ingredientBookFilePath.equals(o.ingredientBookFilePath)
+            && this.recipeBookFilePath.equals(o.recipeBookFilePath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(guiSettings, ingredientBookFilePath, recipeBookFilePath);
+        return Objects.hash(this.guiSettings, this.ingredientBookFilePath, this.recipeBookFilePath);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Gui Settings : " + guiSettings);
-        sb.append("\nLocal data ingredient file location : " + ingredientBookFilePath);
-        sb.append("\nLocal data recipe file location : " + recipeBookFilePath);
+        sb.append("Gui Settings : " + this.guiSettings);
+        sb.append("\nLocal ingredient data file location : " + this.ingredientBookFilePath);
+        sb.append("\nLocal recipe data file location : " + this.recipeBookFilePath);
         return sb.toString();
     }
 }

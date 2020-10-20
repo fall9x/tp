@@ -1,9 +1,7 @@
 package chopchop.model;
 
+import chopchop.model.exceptions.DuplicateEntryException;
 import chopchop.model.recipe.Recipe;
-import chopchop.model.recipe.RecipeBook;
-import chopchop.model.recipe.ReadOnlyRecipeBook;
-import chopchop.model.recipe.exceptions.DuplicateRecipeException;
 import chopchop.testutil.RecipeBuilder;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,11 +25,11 @@ import java.util.ArrayList;
 
 public class RecipeBookTest {
 
-    private final RecipeBook recipeBook = new RecipeBook();
+    private final EntryBook<Recipe> recipeBook = new EntryBook<>();
 
     @Test
     public void constructor() {
-        assertEquals(Collections.emptyList(), recipeBook.getFoodEntryList());
+        assertEquals(Collections.emptyList(), recipeBook.getEntryList());
     }
 
     @Test
@@ -41,7 +39,7 @@ public class RecipeBookTest {
 
     @Test
     public void resetData_withValidReadOnlyRecipeBook_replacesData() {
-        RecipeBook newData = getTypicalRecipeBook();
+        EntryBook<Recipe> newData = getTypicalRecipeBook();
         recipeBook.resetData(newData);
         assertEquals(newData, recipeBook);
     }
@@ -53,44 +51,44 @@ public class RecipeBookTest {
         List<Recipe> newRecipes = Arrays.asList(APRICOT_SALAD, editedRecipe);
         RecipeBookTest.RecipeBookStub newData = new RecipeBookTest.RecipeBookStub(newRecipes);
 
-        assertThrows(DuplicateRecipeException.class, () -> recipeBook.resetData(newData));
+        assertThrows(DuplicateEntryException.class, () -> recipeBook.resetData(newData));
     }
 
     @Test
     public void hasRecipe_nullRecipe_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> recipeBook.hasRecipe(null));
+        assertThrows(NullPointerException.class, () -> recipeBook.has(null));
     }
 
     @Test
     public void hasRecipe_recipeNotInRecipeBook_returnsFalse() {
-        assertFalse(recipeBook.hasRecipe(APRICOT_SALAD));
+        assertFalse(recipeBook.has(APRICOT_SALAD));
     }
 
     @Test
     public void hasRecipe_recipeInRecipeBook_returnsTrue() {
-        recipeBook.addRecipe(APRICOT_SALAD);
-        assertTrue(recipeBook.hasRecipe(APRICOT_SALAD));
+        recipeBook.add(APRICOT_SALAD);
+        assertTrue(recipeBook.has(APRICOT_SALAD));
     }
 
     @Test
     public void hasRecipe_recipeWithSameIdentityFieldsInRecipeBook_returnsTrue() {
-        recipeBook.addRecipe(APRICOT_SALAD);
+        recipeBook.add(APRICOT_SALAD);
         Recipe editedRecipe = new RecipeBuilder(APRICOT_SALAD)
             .withIngredients(new ArrayList<>(Arrays.asList(BANANA_REF)))
             .withSteps(new ArrayList<>(Arrays.asList(STEP_BANANA_SALAD)))
             .build();
-        assertTrue(recipeBook.hasRecipe(editedRecipe)); //Both identity fields must be equal
+        assertTrue(recipeBook.has(editedRecipe)); //Both identity fields must be equal
     }
 
     @Test
     public void getRecipeList_modifyList_throwsUnsupportedOperationException() {
-        assertThrows(UnsupportedOperationException.class, () -> recipeBook.getFoodEntryList().remove(0));
+        assertThrows(UnsupportedOperationException.class, () -> recipeBook.getEntryList().remove(0));
     }
 
     /**
      * A stub ReadOnlyRecipeBook whose recipes list can violate interface constraints.
      */
-    private static class RecipeBookStub implements ReadOnlyRecipeBook {
+    private static class RecipeBookStub implements ReadOnlyEntryBook<Recipe> {
         private final ObservableList<Recipe> recipes = FXCollections.observableArrayList();
 
         RecipeBookStub(Collection<Recipe> recipes) {
@@ -98,7 +96,7 @@ public class RecipeBookTest {
         }
 
         @Override
-        public ObservableList<Recipe> getFoodEntryList() {
+        public ObservableList<Recipe> getEntryList() {
             return recipes;
         }
     }

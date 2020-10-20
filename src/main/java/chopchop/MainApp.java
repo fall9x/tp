@@ -5,45 +5,44 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import chopchop.model.ingredient.IngredientBook;
-import chopchop.model.ingredient.ReadOnlyIngredientBook;
-import chopchop.model.recipe.ReadOnlyRecipeBook;
-import chopchop.model.recipe.RecipeBook;
-import chopchop.model.util.SampleDataUtil;
-import chopchop.storage.IngredientBookStorage;
-import chopchop.storage.JsonIngredientBookStorage;
-import chopchop.storage.JsonRecipeBookStorage;
-import chopchop.storage.RecipeBookStorage;
-import chopchop.ui.UiManager;
-import javafx.application.Application;
-import javafx.stage.Stage;
 import chopchop.commons.core.Config;
 import chopchop.commons.core.LogsCenter;
 import chopchop.commons.core.Version;
 import chopchop.commons.exceptions.DataConversionException;
 import chopchop.commons.util.ConfigUtil;
 import chopchop.commons.util.StringUtil;
-import chopchop.logic.Logic;
 import chopchop.logic.CommandDispatcher;
+import chopchop.logic.Logic;
+import chopchop.model.EntryBook;
 import chopchop.model.Model;
 import chopchop.model.ModelManager;
+import chopchop.model.ReadOnlyEntryBook;
 import chopchop.model.ReadOnlyUserPrefs;
 import chopchop.model.UserPrefs;
+import chopchop.model.ingredient.Ingredient;
+import chopchop.model.recipe.Recipe;
+import chopchop.model.util.SampleDataUtil;
+import chopchop.storage.IngredientBookStorage;
+import chopchop.storage.JsonIngredientBookStorage;
+import chopchop.storage.JsonRecipeBookStorage;
 import chopchop.storage.JsonUserPrefsStorage;
+import chopchop.storage.RecipeBookStorage;
 import chopchop.storage.Storage;
 import chopchop.storage.StorageManager;
 import chopchop.storage.UserPrefsStorage;
 import chopchop.ui.Ui;
-
+import chopchop.ui.UiManager;
+import javafx.application.Application;
+import javafx.stage.Stage;
 
 /**
  * Runs the application.
  */
 public class MainApp extends Application {
-
     public static final Version VERSION = new Version(0, 6, 0, true);
 
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
+
     protected Ui ui;
     protected Logic logic;
     protected Storage storage;
@@ -52,7 +51,7 @@ public class MainApp extends Application {
 
     @Override
     public void init() throws Exception {
-        logger.info("=============================[ Initializing AddressBook ]===========================");
+        logger.info("=============================[ Initializing ChopChop ]===========================");
         super.init();
 
         AppParameters appParameters = AppParameters.parse(getParameters());
@@ -60,10 +59,10 @@ public class MainApp extends Application {
 
         UserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(config.getUserPrefsFilePath());
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
-        IngredientBookStorage ingredientBookStorage =
-            new JsonIngredientBookStorage(userPrefs.getIngredientBookFilePath());
         RecipeBookStorage recipeBookStorage = new JsonRecipeBookStorage(userPrefs.getRecipeBookFilePath());
-        storage = new StorageManager(ingredientBookStorage, recipeBookStorage, userPrefsStorage);
+        IngredientBookStorage ingredientBookStorage =
+                new JsonIngredientBookStorage(userPrefs.getIngredientBookFilePath());
+        storage = new StorageManager(recipeBookStorage, ingredientBookStorage, userPrefsStorage);
 
         initLogging(config);
 
@@ -72,45 +71,43 @@ public class MainApp extends Application {
         logic = new CommandDispatcher(model, storage);
 
         ui = new UiManager(logic);
-
     }
+
     /**
-     * Returns a {@code ModelManager} with the data from {@code storage}'s ingredient and recipe book
-     * and {@code userPrefs}. <br>
-     * The data from the sample ingredient or recipe book will be used instead if {@code storage}'s
-     * ingredient or recipe book is not found,
-     * or an empty ingredient or recipe book will be used instead if errors occur when reading
-     * {@code storage}'s ingredient or recipe book.
+     * Returns a {@code ModelManager} with the data from {@code storage}'s ingredient and recipe book and
+     * {@code userPrefs}. <br>
+     * The data from the sample ingredient or recipe book will be used instead if {@code storage}'s ingredient or
+     * recipe book is not found, or an empty ingredient or recipe book will be used instead if errors occur when
+     * reading {@code storage}'s ingredient or recipe book.
      */
     private Model initModelManager(Storage storage, ReadOnlyUserPrefs userPrefs) {
-
-        Optional<ReadOnlyIngredientBook> ingredientBookOptional;
-        Optional<ReadOnlyRecipeBook> recipeBookOptional;
-        ReadOnlyIngredientBook initialIndData;
-        ReadOnlyRecipeBook initialRecData;
+        Optional<ReadOnlyEntryBook<Recipe>> recipeBookOptional;
+        Optional<ReadOnlyEntryBook<Ingredient>> ingredientBookOptional;
+        ReadOnlyEntryBook<Recipe> initialRecipeData;
+        ReadOnlyEntryBook<Ingredient> initialIngredientData;
 
         try {
-            ingredientBookOptional = storage.readIngredientBook();
-            if (!ingredientBookOptional.isPresent()) {
-                logger.info("Data file for ingredient book not found. Will be starting with a sample IndBook");
-            }
             recipeBookOptional = storage.readRecipeBook();
-            initialIndData = ingredientBookOptional.orElseGet(SampleDataUtil::getSampleIngredientBook);
-            if (!recipeBookOptional.isPresent()) {
-                logger.info("Data file for recipe book not found. Will be starting with a sample RecBook");
+            ingredientBookOptional = storage.readIngredientBook();
+
+            if (recipeBookOptional.isEmpty()) {
+                logger.info("Data file for recipe book not found. Will be starting with a sample RecipeBook");
             }
-            initialRecData = recipeBookOptional.orElseGet(SampleDataUtil::getSampleRecipeBook);
+
+            if (ingredientBookOptional.isEmpty()) {
+                logger.info("Data file for ingredient book not found. Will be starting with a sample IngredientBook");
+            }
+
+            initialRecipeData = recipeBookOptional.orElseGet(SampleDataUtil::getSampleRecipeBook);
+            initialIngredientData = ingredientBookOptional.orElseGet(SampleDataUtil::getSampleIngredientBook);
         } catch (DataConversionException e) {
-            logger.warning("Data file not in the correct format. Will be starting with an empty AddressBook");
-            initialIndData = new IngredientBook();
-            initialRecData = new RecipeBook();
-        } catch (IOException e) {
-            logger.warning("Problem while reading from the file. Will be starting with an empty AddressBook");
-            initialIndData = new IngredientBook();
-            initialRecData = new RecipeBook();
+            logger.warning("Data file not in the correct format. Will be starting with an empty RecipeBook and"
+                    + " IngredientBook");
+            initialRecipeData = new EntryBook<>();
+            initialIngredientData = new EntryBook<>();
         }
 
-        return new ModelManager(initialRecData, initialIndData, userPrefs);
+        return new ModelManager(initialRecipeData, initialIngredientData, userPrefs);
     }
 
     private void initLogging(Config config) {
@@ -140,7 +137,7 @@ public class MainApp extends Application {
             initializedConfig = configOptional.orElse(new Config());
         } catch (DataConversionException e) {
             logger.warning("Config file at " + configFilePathUsed + " is not in the correct format. "
-                + "Using default config properties");
+                    + "Using default config properties");
             initializedConfig = new Config();
         }
 
@@ -150,6 +147,7 @@ public class MainApp extends Application {
         } catch (IOException e) {
             logger.warning("Failed to save config file : " + StringUtil.getDetails(e));
         }
+
         return initializedConfig;
     }
 
@@ -169,10 +167,7 @@ public class MainApp extends Application {
             initializedPrefs = prefsOptional.orElse(new UserPrefs());
         } catch (DataConversionException e) {
             logger.warning("UserPrefs file at " + prefsFilePath + " is not in the correct format. "
-                + "Using default user prefs");
-            initializedPrefs = new UserPrefs();
-        } catch (IOException e) {
-            logger.warning("Problem while reading from the file. Will be starting with an empty AddressBook");
+                    + "Using default user prefs");
             initializedPrefs = new UserPrefs();
         }
 
@@ -183,19 +178,18 @@ public class MainApp extends Application {
             logger.warning("Failed to save config file : " + StringUtil.getDetails(e));
         }
 
-        initializedPrefs = new UserPrefs();
         return initializedPrefs;
     }
 
     @Override
     public void start(Stage primaryStage) {
-        logger.info("Starting AddressBook " + MainApp.VERSION);
+        logger.info("Starting ChopChop " + MainApp.VERSION);
         ui.start(primaryStage);
     }
 
     @Override
     public void stop() {
-        logger.info("============================ [ Stopping Address Book ] =============================");
+        logger.info("============================ [ Stopping ChopChop ] =============================");
         try {
             storage.saveUserPrefs(model.getUserPrefs());
         } catch (IOException e) {

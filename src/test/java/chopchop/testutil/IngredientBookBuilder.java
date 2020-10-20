@@ -1,17 +1,17 @@
 package chopchop.testutil;
 
+import chopchop.model.EntryBook;
 import chopchop.model.ingredient.Ingredient;
-import chopchop.model.ingredient.IngredientBook;
 
 public class IngredientBookBuilder {
 
-    private IngredientBook ingredientBook;
+    private EntryBook<Ingredient> ingredientBook;
 
     public IngredientBookBuilder() {
-        ingredientBook = new IngredientBook();
+        ingredientBook = new EntryBook<>();
     }
 
-    public IngredientBookBuilder(IngredientBook ingredientBook) {
+    public IngredientBookBuilder(EntryBook<Ingredient> ingredientBook) {
         this.ingredientBook = ingredientBook;
     }
 
@@ -19,11 +19,11 @@ public class IngredientBookBuilder {
      * Adds a new {@code Person} to the {@code AddressBook} that we are building.
      */
     public IngredientBookBuilder withIngredient(Ingredient ind) {
-        ingredientBook.addIngredient(ind);
+        ingredientBook.add(ind);
         return this;
     }
 
-    public IngredientBook build() {
+    public EntryBook<Ingredient> build() {
         return ingredientBook;
     }
 }

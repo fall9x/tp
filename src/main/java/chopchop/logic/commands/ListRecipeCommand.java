@@ -1,11 +1,9 @@
-// ListRecipeCommand.java
-
 package chopchop.logic.commands;
 
-import chopchop.model.Model;
-
+import static chopchop.model.Model.PREDICATE_SHOW_ALL_ENTRIES;
 import static java.util.Objects.requireNonNull;
-import static chopchop.model.Model.PREDICATE_SHOW_ALL_RECIPES;
+
+import chopchop.model.Model;
 
 /**
  * Lists all recipes in the recipe book to the user.
@@ -17,7 +15,7 @@ public class ListRecipeCommand extends Command {
     @Override
     public CommandResult execute(Model model) {
         requireNonNull(model);
-        model.updateFilteredRecipeList(PREDICATE_SHOW_ALL_RECIPES);
+        model.updateFilteredRecipeList(PREDICATE_SHOW_ALL_ENTRIES);
         return new CommandResult(MESSAGE_SUCCESS);
     }
 }

@@ -1,15 +1,13 @@
 package chopchop.logic.commands;
 
-
-import chopchop.model.Model;
-import chopchop.model.recipe.Recipe;
-import chopchop.logic.commands.exceptions.CommandException;
-
+import static chopchop.util.Strings.ARG_INGREDIENT;
+import static chopchop.util.Strings.ARG_QUANTITY;
+import static chopchop.util.Strings.ARG_STEP;
 import static java.util.Objects.requireNonNull;
 
-import static chopchop.util.Strings.ARG_STEP;
-import static chopchop.util.Strings.ARG_QUANTITY;
-import static chopchop.util.Strings.ARG_INGREDIENT;
+import chopchop.logic.commands.exceptions.CommandException;
+import chopchop.model.Model;
+import chopchop.model.recipe.Recipe;
 
 /**
  * Adds a person to the address book.

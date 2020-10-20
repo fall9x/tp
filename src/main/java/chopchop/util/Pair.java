@@ -2,6 +2,7 @@
 
 package chopchop.util;
 
+import java.util.Comparator;
 import java.util.function.Function;
 import java.util.function.BiFunction;
 
@@ -106,4 +107,19 @@ public class Pair<T, U> {
     public static <T, U> Pair<T, U> of(T fst, U snd) {
         return new Pair<T, U>(fst, snd);
     }
+
+    /**
+     * Returns a comparator that compares using the first element of the pair only.
+     */
+    public static <A extends Comparable<A>, B> Comparator<Pair<A, B>> comparingFirst() {
+        return (a, b) -> a.fst().compareTo(b.fst());
+    }
+
+    /**
+     * Returns a comparator that compares using the second element of the pair only.
+     */
+    public static <A, B extends Comparable<B>> Comparator<Pair<A, B>> comparingSecond() {
+        return (a, b) -> a.snd().compareTo(b.snd());
+    }
+
 }

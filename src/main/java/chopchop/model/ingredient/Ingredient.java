@@ -1,57 +1,98 @@
 package chopchop.model.ingredient;
 
-import static chopchop.commons.util.CollectionUtil.requireAllNonNull;
-import static java.util.Objects.requireNonNull;
-
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.Optional;
+import java.util.Comparator;
 
-import chopchop.model.FoodEntry;
-import chopchop.model.attributes.Name;
+import chopchop.model.Entry;
 import chopchop.model.attributes.Quantity;
 import chopchop.model.attributes.ExpiryDate;
+import chopchop.model.exceptions.IncompatibleIngredientsException;
 
-import chopchop.model.ingredient.exceptions.IncompatibleIngredientsException;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Represents an Ingredient in the recipe manager.
  */
-public class Ingredient extends FoodEntry {
+public class Ingredient extends Entry {
 
-    // Identity fields
-    private final ExpiryDate expiryDate;
+    // comparator that compares expiry dates, and puts empty expiries at the end.
+    public static final Comparator<Optional<ExpiryDate>> SET_COMPARATOR = (a, b) -> {
 
-    // Data fields
-    private final Quantity quantity;
+        if (a.isEmpty() && b.isEmpty()) {
+            return 0;
+        } else if (a.isEmpty()) {
+            return 1;
+        } else if (b.isEmpty()) {
+            return -1;
+        } else {
+            return a.get().compareTo(b.get());
+        }
+    };
+
+    private final TreeMap<Optional<ExpiryDate>, Quantity> sets;
 
     /**
      * Every field must be present and not null. Use this constructor if expiry date is not present.
      * Guarantees: details are present and not null, field values are validated, immutable.
      */
-    public Ingredient(Name name, Quantity quantity) {
-        super(name);
-        requireNonNull(quantity);
-        this.quantity = quantity;
-        this.expiryDate = null;
+    public Ingredient(String name, Quantity quantity) {
+        this(name, quantity, null);
     }
 
     /**
      * Every field must be present and not null. If expiry date is not present, use other constructor.
      * Guarantees: details are present and not null, field values are validated, immutable.
      */
-    public Ingredient(Name name, Quantity quantity, ExpiryDate expiryDate) {
+    public Ingredient(String name, Quantity quantity, ExpiryDate expiryDate) {
         super(name);
-        requireAllNonNull(quantity, expiryDate);
-        this.quantity = quantity;
-        this.expiryDate = expiryDate;
+        requireNonNull(quantity);
+
+        this.sets = new TreeMap<>(SET_COMPARATOR);
+        this.sets.put(Optional.ofNullable(expiryDate), quantity);
+    }
+
+    /**
+     * Constructs a set of ingredients directly from the map of expiry dates and quantities.
+     */
+    public Ingredient(String name, TreeMap<Optional<ExpiryDate>, Quantity> sets) {
+        super(name);
+        this.sets = sets;
     }
 
     public Quantity getQuantity() {
-        return quantity;
+        assert !this.sets.isEmpty();
+
+        // we *COULD* make an "identity" for Quantity, but that's too much effort, and each
+        // class of Quantity would need to explicitly handle that. Sadge.
+
+        // if we have at least 2, then we can get() the optional.
+        if (this.sets.size() >= 2) {
+
+            return this.sets.values()
+                .stream()
+                .reduce((a, b) -> a.add(b).getValue())
+                .get();
+
+        } else {
+            // well. then it's just the first one.
+            return this.sets.firstEntry().getValue();
+        }
     }
 
     public Optional<ExpiryDate> getExpiryDate() {
-        return Optional.ofNullable(expiryDate);
+        // just return the first expiry date.
+        return this.sets.firstEntry().getKey();
+    }
+
+    public TreeMap<Optional<ExpiryDate>, Quantity> getIngredientSets() {
+
+        // i want const correctness dammit
+        var ret = new TreeMap<Optional<ExpiryDate>, Quantity>(SET_COMPARATOR);
+        ret.putAll(this.sets);
+
+        return ret;
     }
 
     /**
@@ -63,51 +104,67 @@ public class Ingredient extends FoodEntry {
      */
     public Ingredient combine(Ingredient other) throws IncompatibleIngredientsException {
 
-        if (!this.name.equals(other.name)) {
+        if (!this.isSame(other)) {
             throw new IncompatibleIngredientsException(String.format("cannot combine '%s' with '%s'",
                 this.name, other.name));
         }
 
-        // TODO: expiry date handling! see #58
-        return this.quantity.add(other.quantity)
-            .map(newQty -> new Ingredient(this.name, newQty, this.expiryDate))
-            .orElseThrow(err -> new IncompatibleIngredientsException(err));
+        // there's no constructor that takes both an existing map and the comparator...
+        var newSets = new TreeMap<Optional<ExpiryDate>, Quantity>(SET_COMPARATOR);
+        newSets.putAll(this.sets);
+
+        // because of exceptions, we cannot do this using nice lambdas and stuff.
+        // so write some dirty imperative code to merge the ingredients.
+        for (var entry : other.sets.entrySet()) {
+
+            var exp = entry.getKey();
+            var qty = entry.getValue();
+
+            // get the existing quantity of ingredient with the given expiry date
+            var existingQty = newSets.get(exp);
+            if (existingQty != null) {
+                // it exists; time to combine them using Quantity::add()
+                // (assuming they are compatible, of course)
+                var newQty = existingQty.add(qty).orElseThrow(IncompatibleIngredientsException::new);
+
+                newSets.put(exp, newQty);
+            } else {
+                // it doesn't exist; so just add it in.
+                newSets.put(exp, qty);
+            }
+        }
+
+        return new Ingredient(this.name.toString(), newSets);
     }
 
-    /**
-     * Returns true if both ingredients of the same name and expiry date.
-     */
+    @Override
+    public boolean isSame(Entry other) {
+        return other == this
+                || (other instanceof Ingredient
+                && this.name.equals(((Ingredient) other).name));
+    }
+
     @Override
     public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-
-        if (!(other instanceof Ingredient)) {
-            return false;
-        }
-
-        Ingredient otherInd = (Ingredient) other;
-
-        return otherInd.getName().equals(getName())
-            && otherInd.getExpiryDate().get().equals(getExpiryDate().get());
+        return other == this
+                || (other instanceof Ingredient
+                && this.name.equals(((Ingredient) other).name)
+                && this.sets.equals(((Ingredient) other).sets));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, quantity, expiryDate);
+        return Objects.hash(name, this.sets);
     }
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
 
-        builder.append(getName())
-                .append(" Quantity: ")
-                .append(getQuantity());
-
-        getExpiryDate().ifPresent(expiryDate -> builder.append(" Expiry Date: ").append(expiryDate));
-        return builder.toString();
+        return String.format("%s (%s)%s",
+            this.getName(),
+            this.getQuantity(),
+            this.getExpiryDate().map(d -> String.format(" expires: %s", d))
+                .orElse("")
+        );
     }
-
 }

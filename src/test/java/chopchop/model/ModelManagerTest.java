@@ -1,10 +1,9 @@
 package chopchop.model;
 
+import static chopchop.model.Model.PREDICATE_SHOW_ALL_ENTRIES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static chopchop.model.Model.PREDICATE_SHOW_ALL_RECIPES;
-import static chopchop.model.Model.PREDICATE_SHOW_ALL_INGREDIENTS;
 import static chopchop.testutil.Assert.assertThrows;
 import static chopchop.testutil.TypicalIngredients.APRICOT;
 import static chopchop.testutil.TypicalIngredients.BANANA;
@@ -13,11 +12,11 @@ import static chopchop.testutil.TypicalRecipes.BANANA_SALAD;
 
 import java.util.Arrays;
 
+import chopchop.model.ingredient.Ingredient;
+import chopchop.model.recipe.Recipe;
 import org.junit.jupiter.api.Test;
 import chopchop.commons.core.GuiSettings;
 import chopchop.model.attributes.NameContainsKeywordsPredicate;
-import chopchop.model.ingredient.IngredientBook;
-import chopchop.model.recipe.RecipeBook;
 import chopchop.testutil.IngredientBookBuilder;
 import chopchop.testutil.RecipeBookBuilder;
 
@@ -30,8 +29,8 @@ public class ModelManagerTest {
     public void constructor() {
         assertEquals(new UserPrefs(), modelManager.getUserPrefs());
         assertEquals(new GuiSettings(), modelManager.getGuiSettings());
-        assertEquals(new IngredientBook(), new IngredientBook(modelManager.getIngredientBook()));
-        assertEquals(new RecipeBook(), new RecipeBook(modelManager.getRecipeBook()));
+        assertEquals(new EntryBook<>(), new EntryBook<>(modelManager.getIngredientBook()));
+        assertEquals(new EntryBook<>(), new EntryBook<>(modelManager.getRecipeBook()));
     }
 
     @Test
@@ -78,14 +77,14 @@ public class ModelManagerTest {
 
     @Test
     public void equals() {
-        IngredientBook ingredientBook = new IngredientBookBuilder()
+        EntryBook<Ingredient> ingredientBook = new IngredientBookBuilder()
             .withIngredient(APRICOT).withIngredient(BANANA).build();
-        IngredientBook differentIngredientBook = new IngredientBook();
+        EntryBook<Ingredient> differentIngredientBook = new EntryBook<>();
 
-        RecipeBook recipeBook = new RecipeBookBuilder()
+        EntryBook<Recipe> recipeBook = new RecipeBookBuilder()
             .withRecipe(APRICOT_SALAD).withRecipe(BANANA_SALAD).build();
 
-        RecipeBook differentRecipeBook = new RecipeBook();
+        EntryBook<Recipe> differentRecipeBook = new EntryBook<>();
 
         UserPrefs userPrefs = new chopchop.model.UserPrefs();
 
@@ -112,18 +111,18 @@ public class ModelManagerTest {
             differentRecipeBook, ingredientBook, userPrefs)));
 
         // different filteredIngredientList -> returns false
-        final String[] indKeywords = APRICOT.getName().fullName.split("\\s+");
+        final String[] indKeywords = APRICOT.getName().split("\\s+");
         modelManager.updateFilteredIngredientList(new NameContainsKeywordsPredicate(Arrays.asList(indKeywords)));
         assertFalse(modelManager.equals(new ModelManager(recipeBook, ingredientBook, userPrefs)));
 
         // different filteredRecipeList -> returns false
-        final String[] recKeywords = APRICOT_SALAD.getName().fullName.split("\\s+");
+        final String[] recKeywords = APRICOT_SALAD.getName().split("\\s+");
         modelManager.updateFilteredRecipeList(new NameContainsKeywordsPredicate(Arrays.asList(recKeywords)));
         assertFalse(modelManager.equals(new ModelManager(recipeBook, ingredientBook, userPrefs)));
 
         // resets modelManager to initial state for upcoming tests
-        modelManager.updateFilteredIngredientList(PREDICATE_SHOW_ALL_INGREDIENTS);
-        modelManager.updateFilteredRecipeList(PREDICATE_SHOW_ALL_RECIPES);
+        modelManager.updateFilteredIngredientList(PREDICATE_SHOW_ALL_ENTRIES);
+        modelManager.updateFilteredRecipeList(PREDICATE_SHOW_ALL_ENTRIES);
 
     }
 }

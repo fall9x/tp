@@ -1,16 +1,12 @@
-// DeleteIngredientCommand.java
-
 package chopchop.logic.commands;
 
-import chopchop.model.Model;
-import chopchop.model.ingredient.Ingredient;
+import static java.util.Objects.requireNonNull;
 
 import chopchop.commons.core.Messages;
-
-import chopchop.logic.parser.ItemReference;
 import chopchop.logic.commands.exceptions.CommandException;
-
-import static java.util.Objects.requireNonNull;
+import chopchop.logic.parser.ItemReference;
+import chopchop.model.Model;
+import chopchop.model.ingredient.Ingredient;
 
 /**
  * Deletes an ingredient identified using it's displayed index from the ingredient book.

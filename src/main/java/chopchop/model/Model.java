@@ -5,15 +5,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import chopchop.commons.core.GuiSettings;
-
-import chopchop.model.attributes.Name;
-
-import chopchop.model.recipe.Recipe;
-import chopchop.model.recipe.ReadOnlyRecipeBook;
-
 import chopchop.model.ingredient.Ingredient;
-import chopchop.model.ingredient.ReadOnlyIngredientBook;
-
+import chopchop.model.recipe.Recipe;
 import javafx.collections.ObservableList;
 
 /**
@@ -21,8 +14,7 @@ import javafx.collections.ObservableList;
  */
 public interface Model {
     /** {@code Predicate} that always evaluate to true */
-    Predicate<FoodEntry> PREDICATE_SHOW_ALL_RECIPES = unused -> true;
-    Predicate<FoodEntry> PREDICATE_SHOW_ALL_INGREDIENTS = unused -> true;
+    Predicate<Entry> PREDICATE_SHOW_ALL_ENTRIES = unused -> true;
 
     /**
      * Replaces user prefs data with the data in {@code userPrefs}.
@@ -57,10 +49,10 @@ public interface Model {
     /**
      * Replaces recipe book data with the data in {@code recipeBook}.
      */
-    void setRecipeBook(ReadOnlyRecipeBook recipeBook);
+    void setRecipeBook(ReadOnlyEntryBook<Recipe> recipeBook);
 
-    /** Returns the RecipeBook */
-    ReadOnlyRecipeBook getRecipeBook();
+    /** Returns the ReadOnlyRecipeBook */
+    ReadOnlyEntryBook<Recipe> getRecipeBook();
 
     /**
      * Returns true if a recipe with the same identity as {@code recipe} exists in the recipe book.
@@ -71,11 +63,6 @@ public interface Model {
      * Finds a recipe by name.
      */
     Optional<Recipe> findRecipeWithName(String name);
-
-    /**
-     * Finds a recipe by name.
-     */
-    Optional<Recipe> findRecipeWithName(Name name);
 
     /**
      * Deletes the given recipe.
@@ -92,7 +79,7 @@ public interface Model {
     /**
      * Replaces the given recipe {@code target} with {@code editedRecipe}.
      * {@code target} must exist in the recipe book.
-     * The recipe identity of {@code editedPerson} must not be the same as another existing recipe in the recipe book.
+     * The recipe identity of {@code editedRecipe} must not be the same as another existing recipe in the recipe book.
      */
     void setRecipe(Recipe target, Recipe editedRecipe);
 
@@ -103,7 +90,7 @@ public interface Model {
      * Updates the filter of the filtered recipe list to filter by the given {@code predicate}.
      * @throws NullPointerException if {@code predicate} is null.
      */
-    void updateFilteredRecipeList(Predicate<FoodEntry> predicate);
+    void updateFilteredRecipeList(Predicate<? super Recipe> predicate);
 
     /**
      * Returns the user prefs' ingredient book file path.
@@ -113,26 +100,26 @@ public interface Model {
     /**
      * Sets the user prefs' ingredient book file path.
      */
-    void setIngredientBookFilePath(Path indBookFilePath);
+    void setIngredientBookFilePath(Path ingredientBookFilePath);
 
     /**
-     * Replaces address book data with the data in {@code addressBook}.
+     * Replaces ingredient book data with the data in {@code ingredientBook}.
      */
-    void setIngredientBook(ReadOnlyIngredientBook book);
+    void setIngredientBook(ReadOnlyEntryBook<Ingredient> ingredientBook);
 
-    /** Returns the AddressBook */
-    ReadOnlyIngredientBook getIngredientBook();
-
-    /**
-     * Returns true if a person with the same identity as {@code person} exists in the address book.
-     */
-    boolean hasIngredient(Ingredient ind);
+    /** Returns the ReadOnlyIngredientBook */
+    ReadOnlyEntryBook<Ingredient> getIngredientBook();
 
     /**
-     * Deletes the given person.
-     * The person must exist in the address book.
+     * Returns true if an ingredient with the same identity as {@code ingredient} exists in the ingredient book.
      */
-    void deleteIngredient(Ingredient ind);
+    boolean hasIngredient(Ingredient ingredient);
+
+    /**
+     * Deletes the given ingredient.
+     * The ingredient must exist in the ingredient book.
+     */
+    void deleteIngredient(Ingredient ingredient);
 
     /**
      * Finds an ingredient by name.
@@ -140,31 +127,26 @@ public interface Model {
     Optional<Ingredient> findIngredientWithName(String name);
 
     /**
-     * Finds an ingredient by name.
+     * Adds the given ingredient.
+     * {@code ingredient} must not already exist in the ingredient book.
      */
-    Optional<Ingredient> findIngredientWithName(Name name);
+    void addIngredient(Ingredient ingredient);
 
     /**
-     * Adds the given person.
-     * {@code person} must not already exist in the address book.
-     */
-    void addIngredient(Ingredient ind);
-
-    /**
-     * Replaces the given person {@code target} with {@code editedIngredient}.
-     * {@code target} must exist in the address book.
-     * The person identity of {@code editedIngredient} must not be the same as another existing person in the
-     * address book.
+     * Replaces the given ingredient {@code target} with {@code editedIngredient}.
+     * {@code target} must exist in the ingredient book.
+     * The ingredient identity of {@code editedIngredient} must not be the same as another existing ingredient in the
+     * ingredient book.
      */
     void setIngredient(Ingredient target, Ingredient editedIngredient);
 
-    /** Returns an unmodifiable view of the filtered person list */
+    /** Returns an unmodifiable view of the filtered ingredient list */
     ObservableList<Ingredient> getFilteredIngredientList();
 
     /**
-     * Updates the filter of the filtered person list to filter by the given {@code predicate}.
+     * Updates the filter of the filtered ingredient list to filter by the given {@code predicate}.
      * @throws NullPointerException if {@code predicate} is null.
      */
-    void updateFilteredIngredientList(Predicate<FoodEntry> predicate);
+    void updateFilteredIngredientList(Predicate<? super Ingredient> predicate);
 
 }

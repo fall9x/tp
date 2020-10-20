@@ -17,9 +17,8 @@ public class StatusBarFooter extends UiPart<Region> {
     @FXML
     private Label saveLocationStatus;
 
-
     /**
-     * Constructs {@code StatusBarFooter}.
+     * Creates a {@code StatusBarFooter} with the given {@code Path}.
      */
     public StatusBarFooter(Path saveLocation) {
         super(FXML);

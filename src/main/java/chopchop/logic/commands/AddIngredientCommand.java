@@ -1,17 +1,13 @@
-// AddIngredientCommand.java
-
 package chopchop.logic.commands;
-
-import chopchop.model.Model;
-import chopchop.model.ingredient.Ingredient;
-import chopchop.model.ingredient.exceptions.IncompatibleIngredientsException;
-
-import chopchop.logic.commands.exceptions.CommandException;
-
-import static java.util.Objects.requireNonNull;
 
 import static chopchop.util.Strings.ARG_EXPIRY;
 import static chopchop.util.Strings.ARG_QUANTITY;
+import static java.util.Objects.requireNonNull;
+
+import chopchop.logic.commands.exceptions.CommandException;
+import chopchop.model.Model;
+import chopchop.model.exceptions.IncompatibleIngredientsException;
+import chopchop.model.ingredient.Ingredient;
 
 public class AddIngredientCommand extends Command {
 

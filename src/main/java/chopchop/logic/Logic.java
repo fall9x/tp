@@ -3,18 +3,12 @@ package chopchop.logic;
 import java.nio.file.Path;
 
 import chopchop.commons.core.GuiSettings;
-
 import chopchop.logic.commands.CommandResult;
 import chopchop.logic.commands.exceptions.CommandException;
-
 import chopchop.logic.parser.exceptions.ParseException;
-
+import chopchop.model.ReadOnlyEntryBook;
 import chopchop.model.ingredient.Ingredient;
-import chopchop.model.ingredient.ReadOnlyIngredientBook;
-
 import chopchop.model.recipe.Recipe;
-import chopchop.model.recipe.ReadOnlyRecipeBook;
-
 import javafx.collections.ObservableList;
 
 /**
@@ -34,12 +28,12 @@ public interface Logic {
     /**
      * Returns the RecipeBook.
      */
-    ReadOnlyRecipeBook getRecipeBook();
+    ReadOnlyEntryBook<Recipe> getRecipeBook();
 
     /**
      * Returns the IngredientBook.
      */
-    ReadOnlyIngredientBook getIngredientBook();
+    ReadOnlyEntryBook<Ingredient> getIngredientBook();
 
     /**
      * Returns an unmodifiable view of the filtered list of recipes.

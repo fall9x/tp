@@ -1,22 +1,24 @@
 package chopchop.storage;
 
 import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.logging.Logger;
+
+import chopchop.commons.core.LogsCenter;
 import chopchop.commons.exceptions.DataConversionException;
 import chopchop.commons.exceptions.IllegalValueException;
 import chopchop.commons.util.FileUtil;
 import chopchop.commons.util.JsonUtil;
-import chopchop.model.ingredient.ReadOnlyIngredientBook;
-import chopchop.commons.core.LogsCenter;
+import chopchop.model.ReadOnlyEntryBook;
+import chopchop.model.ingredient.Ingredient;
 
 public class JsonIngredientBookStorage implements IngredientBookStorage {
-
     private static final Logger logger = LogsCenter.getLogger(JsonIngredientBookStorage.class);
 
-    private Path filePath;
+    private final Path filePath;
 
     public JsonIngredientBookStorage(Path filePath) {
         this.filePath = filePath;
@@ -27,19 +29,18 @@ public class JsonIngredientBookStorage implements IngredientBookStorage {
      */
     @Override
     public Path getIngredientBookFilePath() {
-        return filePath;
+        return this.filePath;
     }
 
     /**
-     * Returns IngredientBook data as a {@link ReadOnlyIngredientBook}.
+     * Returns IngredientBook data as a {@link ReadOnlyEntryBook}.
      * Returns {@code Optional.empty()} if storage file is not found.
      *
      * @throws DataConversionException if the data in storage is not in the expected format.
-     * @throws IOException             if there was any problem when reading from the storage.
      */
     @Override
-    public Optional<ReadOnlyIngredientBook> readIngredientBook() throws DataConversionException, IOException {
-        return readIngredientBook(filePath);
+    public Optional<ReadOnlyEntryBook<Ingredient>> readIngredientBook() throws DataConversionException {
+        return this.readIngredientBook(this.filePath);
     }
 
     /**
@@ -47,18 +48,17 @@ public class JsonIngredientBookStorage implements IngredientBookStorage {
      * @see #getIngredientBookFilePath()
      */
     @Override
-    public Optional<ReadOnlyIngredientBook> readIngredientBook(Path filePath)
-        throws DataConversionException, IOException {
+    public Optional<ReadOnlyEntryBook<Ingredient>> readIngredientBook(Path filePath) throws DataConversionException {
         requireNonNull(filePath);
 
-        Optional<JsonSerializableIngredientBook> jsonIndBook = JsonUtil.readJsonFile(
+        Optional<JsonSerializableIngredientBook> jsonIngredientBook = JsonUtil.readJsonFile(
             filePath, JsonSerializableIngredientBook.class);
-        if (!jsonIndBook.isPresent()) {
+        if (jsonIngredientBook.isEmpty()) {
             return Optional.empty();
         }
 
         try {
-            return Optional.of(jsonIndBook.get().toModelType());
+            return Optional.of(jsonIngredientBook.get().toModelType());
         } catch (IllegalValueException ive) {
             logger.info("Illegal values found in " + filePath + ": " + ive.getMessage());
             throw new DataConversionException(ive);
@@ -66,14 +66,14 @@ public class JsonIngredientBookStorage implements IngredientBookStorage {
     }
 
     /**
-     * Saves the given {@link ReadOnlyIngredientBook} to the storage.
+     * Saves the given {@link ReadOnlyEntryBook} to the storage.
      *
      * @param ingredientBook cannot be null.
      * @throws IOException if there was any problem writing to the file.
      */
     @Override
-    public void saveIngredientBook(ReadOnlyIngredientBook ingredientBook) throws IOException {
-        saveIngredientBook(ingredientBook, filePath);
+    public void saveIngredientBook(ReadOnlyEntryBook<Ingredient> ingredientBook) throws IOException {
+        this.saveIngredientBook(ingredientBook, this.filePath);
     }
 
     /**
@@ -81,10 +81,10 @@ public class JsonIngredientBookStorage implements IngredientBookStorage {
      *
      * @param ingredientBook updated ingredient book.
      * @param filePath relative path where the json file is at.
-     * @see #saveIngredientBook(ReadOnlyIngredientBook)
+     * @see #saveIngredientBook(ReadOnlyEntryBook)
      */
     @Override
-    public void saveIngredientBook(ReadOnlyIngredientBook ingredientBook, Path filePath) throws IOException {
+    public void saveIngredientBook(ReadOnlyEntryBook<Ingredient> ingredientBook, Path filePath) throws IOException {
         requireNonNull(ingredientBook);
         requireNonNull(filePath);
 

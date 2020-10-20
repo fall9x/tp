@@ -1,6 +1,5 @@
 package chopchop.ui;
 
-
 import chopchop.model.ingredient.Ingredient;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;

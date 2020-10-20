@@ -18,7 +18,7 @@ public class GuiSettings implements Serializable {
     private final Point windowCoordinates;
 
     /**
-     * Constructs {@code GuiSettings}.
+     * Constructs a {@code GuiSettings} with the default height, width and position.
      */
     public GuiSettings() {
         windowWidth = DEFAULT_WIDTH;
@@ -27,7 +27,7 @@ public class GuiSettings implements Serializable {
     }
 
     /**
-     * Constructs {@code GuiSettings}.
+     * Constructs a {@code GuiSettings} with the specified height, width and position.
      */
     public GuiSettings(double windowWidth, double windowHeight, int xPosition, int yPosition) {
         this.windowWidth = windowWidth;

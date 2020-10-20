@@ -5,12 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import chopchop.model.exceptions.DuplicateEntryException;
 import chopchop.testutil.IngredientBuilder;
 import chopchop.model.ingredient.Ingredient;
 import chopchop.model.attributes.units.Count;
-import chopchop.model.ingredient.IngredientBook;
-import chopchop.model.ingredient.ReadOnlyIngredientBook;
-import chopchop.model.ingredient.exceptions.DuplicateIngredientException;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,11 +26,11 @@ import static chopchop.logic.commands.CommandTestUtil.VALID_INGREDIENT_EXPIRY_BA
 
 public class IngredientBookTest {
 
-    private final IngredientBook ingredientBook = new IngredientBook();
+    private final EntryBook<Ingredient> ingredientBook = new EntryBook<>();
 
     @Test
     public void constructor() {
-        assertEquals(Collections.emptyList(), ingredientBook.getFoodEntryList());
+        assertEquals(Collections.emptyList(), ingredientBook.getEntryList());
     }
 
     @Test
@@ -42,7 +40,7 @@ public class IngredientBookTest {
 
     @Test
     public void resetData_withValidReadOnlyIngredientBook_replacesData() {
-        IngredientBook newData = getTypicalIngredientBook();
+        EntryBook<Ingredient> newData = getTypicalIngredientBook();
         ingredientBook.resetData(newData);
         assertEquals(newData, ingredientBook);
     }
@@ -56,44 +54,44 @@ public class IngredientBookTest {
         List<Ingredient> newIngredients = Arrays.asList(APRICOT, editedAlice);
         IngredientBookTest.IngredientBookStub newData = new IngredientBookTest.IngredientBookStub(newIngredients);
 
-        assertThrows(DuplicateIngredientException.class, () -> ingredientBook.resetData(newData));
+        assertThrows(DuplicateEntryException.class, () -> ingredientBook.resetData(newData));
     }
 
     @Test
     public void hasIngredient_nullIngredient_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> ingredientBook.hasIngredient(null));
+        assertThrows(NullPointerException.class, () -> ingredientBook.has(null));
     }
 
     @Test
     public void hasIngredient_personNotInIngredientBook_returnsFalse() {
-        assertFalse(ingredientBook.hasIngredient(APRICOT));
+        assertFalse(ingredientBook.has(APRICOT));
     }
 
     @Test
     public void hasIngredient_personInIngredientBook_returnsTrue() {
-        ingredientBook.addIngredient(APRICOT);
-        assertTrue(ingredientBook.hasIngredient(APRICOT));
+        ingredientBook.add(APRICOT);
+        assertTrue(ingredientBook.has(APRICOT));
     }
 
     @Test
     public void hasIngredient_personWithSameIdentityFieldsInIngredientBook_returnsTrue() {
-        ingredientBook.addIngredient(APRICOT);
+        ingredientBook.add(APRICOT);
         Ingredient editedAlice = new IngredientBuilder(APRICOT)
             .withQuantity(Count.of(VALID_INGREDIENT_QTY_BANANA))
             .withDate(VALID_INGREDIENT_EXPIRY_BANANA)
             .build();
-        assertFalse(ingredientBook.hasIngredient(editedAlice)); //Both identity fields must be equal
+        assertTrue(ingredientBook.has(editedAlice)); //Both identity fields must be equal
     }
 
     @Test
     public void getIngredientList_modifyList_throwsUnsupportedOperationException() {
-        assertThrows(UnsupportedOperationException.class, () -> ingredientBook.getFoodEntryList().remove(0));
+        assertThrows(UnsupportedOperationException.class, () -> ingredientBook.getEntryList().remove(0));
     }
 
     /**
      * A stub ReadOnlyIngredientBook whose persons list can violate interface constraints.
      */
-    private static class IngredientBookStub implements ReadOnlyIngredientBook {
+    private static class IngredientBookStub implements ReadOnlyEntryBook<Ingredient> {
         private final ObservableList<Ingredient> ingredients = FXCollections.observableArrayList();
 
         IngredientBookStub(Collection<Ingredient> ingredients) {
@@ -101,9 +99,8 @@ public class IngredientBookTest {
         }
 
         @Override
-        public ObservableList<Ingredient> getFoodEntryList() {
-            return ingredients;
+        public ObservableList<Ingredient> getEntryList() {
+            return this.ingredients;
         }
     }
-
 }

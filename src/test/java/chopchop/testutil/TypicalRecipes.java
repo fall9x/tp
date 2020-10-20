@@ -1,8 +1,8 @@
 package chopchop.testutil;
 
+import chopchop.model.EntryBook;
 import chopchop.model.attributes.Step;
 import chopchop.model.recipe.Recipe;
-import chopchop.model.recipe.RecipeBook;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,10 +42,10 @@ public class TypicalRecipes {
     /**
      * Returns an {@code IngredientBook} with all the typical ingredients.
      */
-    public static RecipeBook getTypicalRecipeBook() {
-        RecipeBook rb = new RecipeBook();
+    public static EntryBook<Recipe> getTypicalRecipeBook() {
+        EntryBook<Recipe> rb = new EntryBook<>();
         for (Recipe recipe : getTypicalRecipes()) {
-            rb.addRecipe(recipe);
+            rb.add(recipe);
         }
         return rb;
     }

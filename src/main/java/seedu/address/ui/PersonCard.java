@@ -42,7 +42,7 @@ public class PersonCard extends UiPart<Region> {
     private FlowPane tags;
 
     /**
-     * Constructs {@code PersonCard}.
+     * Creates a {@code PersonCode} with the given {@code Person} and index to display.
      */
     public PersonCard(Person person, int displayedIndex) {
         super(FXML);

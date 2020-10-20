@@ -5,13 +5,11 @@ import java.util.Optional;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
+import chopchop.model.EntryBook;
 import chopchop.model.ModelStub;
-import chopchop.model.attributes.Name;
+import chopchop.model.ReadOnlyEntryBook;
 import chopchop.model.attributes.units.Volume;
-
 import chopchop.model.ingredient.Ingredient;
-import chopchop.model.ingredient.IngredientBook;
-import chopchop.model.ingredient.ReadOnlyIngredientBook;
 
 import org.junit.jupiter.api.Test;
 import chopchop.testutil.IngredientBuilder;
@@ -96,13 +94,13 @@ public class AddIngredientCommandTest {
         @Override
         public boolean hasIngredient(Ingredient ingredient) {
             requireNonNull(ingredient);
-            return this.ingredient.equals(ingredient);
+            return this.ingredient.isSame(ingredient);
         }
 
         @Override
-        public Optional<Ingredient> findIngredientWithName(Name name) {
+        public Optional<Ingredient> findIngredientWithName(String name) {
             requireNonNull(name);
-            return this.ingredient.getName().equals(name)
+            return this.ingredient.getName().equalsIgnoreCase(name)
                 ? Optional.of(this.ingredient)
                 : Optional.empty();
         }
@@ -117,7 +115,7 @@ public class AddIngredientCommandTest {
         @Override
         public boolean hasIngredient(Ingredient ingredient) {
             requireNonNull(ingredient);
-            return ingredientsAdded.stream().anyMatch(ingredient::equals);
+            return ingredientsAdded.stream().anyMatch(ingredient::isSame);
         }
 
         @Override
@@ -127,11 +125,11 @@ public class AddIngredientCommandTest {
         }
 
         @Override
-        public Optional<Ingredient> findIngredientWithName(Name name) {
+        public Optional<Ingredient> findIngredientWithName(String name) {
             requireNonNull(name);
             return this.ingredientsAdded
                 .stream()
-                .filter(i -> i.getName().equals(name))
+                .filter(i -> i.getName().equalsIgnoreCase(name))
                 .findFirst();
         }
 
@@ -146,8 +144,8 @@ public class AddIngredientCommandTest {
         }
 
         @Override
-        public ReadOnlyIngredientBook getIngredientBook() {
-            return new IngredientBook();
+        public ReadOnlyEntryBook<Ingredient> getIngredientBook() {
+            return new EntryBook<>();
         }
     }
 

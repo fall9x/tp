@@ -8,10 +8,10 @@ import java.util.Arrays;
 import java.util.List;
 import chopchop.logic.parser.ItemReference;
 import chopchop.logic.commands.exceptions.CommandException;
+import chopchop.model.EntryBook;
 import chopchop.model.Model;
 import chopchop.model.attributes.NameContainsKeywordsPredicate;
 import chopchop.model.ingredient.Ingredient;
-import chopchop.model.ingredient.IngredientBook;
 
 public class CommandTestUtil {
     public static final String VALID_INGREDIENT_NAME_APRICOT = "Apricot";
@@ -62,7 +62,7 @@ public class CommandTestUtil {
     public static void assertCommandFailure(Command command, Model actualModel, String expectedMessage) {
         // we are unable to defensively copy the model for comparison later, so we can
         // only do so by copying its components.
-        IngredientBook expectedIndBook = new IngredientBook(actualModel.getIngredientBook());
+        EntryBook<Ingredient> expectedIndBook = new EntryBook<>(actualModel.getIngredientBook());
         List<Ingredient> expectedFilteredList = new ArrayList<>(actualModel.getFilteredIngredientList());
 
         assertThrows(CommandException.class, expectedMessage, () -> command.execute(actualModel));
@@ -77,7 +77,7 @@ public class CommandTestUtil {
         assertTrue(targetIndex.getZeroIndex() < model.getFilteredIngredientList().size());
 
         Ingredient person = model.getFilteredIngredientList().get(targetIndex.getZeroIndex());
-        final String[] splitName = person.getName().fullName.split("\\s+");
+        final String[] splitName = person.getName().split("\\s+");
         model.updateFilteredIngredientList(new NameContainsKeywordsPredicate(Arrays.asList(splitName[0])));
 
         assertEquals(1, model.getFilteredIngredientList().size());

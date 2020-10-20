@@ -24,7 +24,7 @@ public class IngredientUtil {
      */
     public static String getIngredientDetails(Ingredient ind) {
         StringBuilder sb = new StringBuilder();
-        sb.append(ind.getName().fullName + " ");
+        sb.append(ind.getName() + " ");
         sb.append(ARG_QUANTITY + " " + ind.getQuantity().toString() + " ");
         sb.append(ARG_EXPIRY + " " +  ind.getExpiryDate().toString() + " ");
         return sb.toString();

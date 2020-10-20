@@ -1,22 +1,18 @@
 package chopchop.model.attributes;
 
-import static java.util.Objects.requireNonNull;
 import static chopchop.commons.util.AppUtil.checkArgument;
+import static java.util.Objects.requireNonNull;
 
-/**
- * Represents a Recipe's name in ChopChop.
- * Guarantees: immutable; is valid as declared in {@link #isValidStep(String)}
- */
 public class Step {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Recipe steps should only contain alphanumeric characters and spaces, and it should not be blank";
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}][a-zA-Z0-9\\s\\W]*";
+            "Steps should only contain alphanumeric characters and spaces, and it should not be blank";
+    public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{ASCII}]*";
 
     public final String step;
 
     /**
-     * Constructs a {@code Name}.
+     * Constructs a {@code Step}.
      *
      * @param step A valid step.
      */
@@ -27,7 +23,7 @@ public class Step {
     }
 
     /**
-     * Returns true if a given string is a valid name.
+     * Returns true if a given string is a valid step.
      */
     public static boolean isValidStep(String test) {
         return test.matches(VALIDATION_REGEX);

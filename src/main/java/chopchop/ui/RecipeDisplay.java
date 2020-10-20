@@ -69,7 +69,7 @@ public class RecipeDisplay extends UiPart<Region> {
      */
     private void stringRepresentation() {
         final StringBuilder builder = new StringBuilder();
-        name = recipe.getName().toString();
+        name = recipe.getName();
 
         List<IngredientReference> ingredientList = recipe.getIngredients();
         if (!ingredientList.isEmpty()) {

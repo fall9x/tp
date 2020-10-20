@@ -1,12 +1,12 @@
 package chopchop.ui;
 
+import java.util.logging.Logger;
+
+import chopchop.commons.core.LogsCenter;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-import seedu.address.commons.core.LogsCenter;
-
-import java.util.logging.Logger;
 
 public class NotificationWindow extends UiPart<Stage> {
     public static final String NOTIFICATION_MESSAGE = "Feature will be coming soon!!";

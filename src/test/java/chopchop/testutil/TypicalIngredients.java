@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import chopchop.model.EntryBook;
 import chopchop.model.ingredient.Ingredient;
 import chopchop.model.attributes.units.Count;
-import chopchop.model.ingredient.IngredientBook;
 import chopchop.model.ingredient.IngredientReference;
 
 import static chopchop.logic.commands.CommandTestUtil.VALID_INGREDIENT_EXPIRY_CUSTARD;
@@ -56,10 +56,10 @@ public class TypicalIngredients {
     /**
      * Returns an {@code IngredientBook} with all the typical ingredients.
      */
-    public static IngredientBook getTypicalIngredientBook() {
-        IngredientBook ab = new IngredientBook();
+    public static EntryBook<Ingredient> getTypicalIngredientBook() {
+        EntryBook<Ingredient> ab = new EntryBook<>();
         for (Ingredient ind : getTypicalIngredients()) {
-            ab.addIngredient(ind);
+            ab.add(ind);
         }
         return ab;
     }

@@ -1,66 +1,62 @@
 package chopchop.model.recipe;
 
+import static chopchop.commons.util.CollectionUtil.requireAllNonNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import chopchop.model.FoodEntry;
-import chopchop.model.attributes.Name;
+import chopchop.model.Entry;
 import chopchop.model.attributes.Step;
 import chopchop.model.ingredient.IngredientReference;
 
-import static chopchop.commons.util.CollectionUtil.requireAllNonNull;
-
-public class Recipe extends FoodEntry {
-
-    // Identity fields
+public class Recipe extends Entry {
     private final List<IngredientReference> ingredients = new ArrayList<>();
     private final List<Step> steps = new ArrayList<>();
 
     /**
      * Every field must be present and not null.
      */
-    public Recipe(Name name, List<IngredientReference> ingredients, List<Step> steps) {
+    public Recipe(String name, List<IngredientReference> ingredients, List<Step> steps) {
         super(name);
-        requireAllNonNull(name, ingredients, steps);
+        requireAllNonNull(ingredients, steps);
         this.ingredients.addAll(ingredients);
         this.steps.addAll(steps);
     }
 
     /**
-     * Returns an immutable ingredient set, which throws {@code UnsupportedOperationException}
+     * Returns an immutable ingredient list, which throws {@code UnsupportedOperationException}
      * if modification is attempted.
      */
     public List<IngredientReference> getIngredients() {
-        return Collections.unmodifiableList(ingredients);
+        return Collections.unmodifiableList(this.ingredients);
     }
 
     /**
-     * Returns an immutable Step List, which throws {@code UnsupportedOperationException}
+     * Returns an immutable step list, which throws {@code UnsupportedOperationException}
      * if modification is attempted.
      */
     public List<Step> getSteps() {
         return Collections.unmodifiableList(steps);
     }
 
-    /**
-     * Returns true if both recipes have the same identity and data fields.
-     * This defines a stronger notion of equality between two recipes.
-     */
+    @Override
+    public boolean isSame(Entry other) {
+        return other == this
+                || (other instanceof Recipe
+                && this.name.equals(((Recipe) other).name));
+    }
+
     @Override
     public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-
-        if (!(other instanceof Recipe)) {
-            return false;
-        }
-
-        Recipe otherRecipe = (Recipe) other;
-        return otherRecipe.getName().equals(getName());
+        return other == this
+                || (other instanceof Recipe
+                && this.name.equals(((Recipe) other).name)
+                && this.ingredients.equals(((Recipe) other).ingredients)
+                && this.steps.equals(((Recipe) other).steps));
     }
 
     @Override
@@ -71,18 +67,21 @@ public class Recipe extends FoodEntry {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(getName())
-                .append(" Ingredients: ");
-        getIngredients().forEach(ingredient -> builder.append(ingredient).append(" "));
-        builder.append(" Steps:");
+        StringJoiner recipeJoiner = new StringJoiner(" ");
+        StringJoiner ingredientJoiner = new StringJoiner(", ");
+        StringJoiner stepJoiner = new StringJoiner(", ");
         AtomicInteger counter = new AtomicInteger(1);
-        getSteps().forEach(step -> {
-            builder.append(" ").append(counter.getAndIncrement()).append(". ");
-            builder.append(step);
-        });
-        return builder.toString();
-    }
 
+        this.getIngredients().forEach(ingredient -> ingredientJoiner.add(ingredient.toString()));
+        this.getSteps().forEach(step -> stepJoiner.add(counter.getAndIncrement() + ". " + step.toString()));
+
+        recipeJoiner.add(this.getName())
+                .add("Ingredients:")
+                .add(ingredientJoiner.toString())
+                .add("Steps:")
+                .add(stepJoiner.toString());
+
+        return recipeJoiner.toString();
+    }
 }
 

@@ -1,10 +1,10 @@
 package chopchop.model.attributes;
 
-import static java.util.Objects.requireNonNull;
 import static chopchop.commons.util.AppUtil.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 /**
- * Represents a FoodEntry's name in the address book.
+ * Represents an item's name in the collection.
  * Guarantees: immutable; is valid as declared in {@link #isValidName(String)}
  * Comparisons are case insensitive.
  */
@@ -14,12 +14,12 @@ public class Name {
             "Names should only contain alphanumeric characters and spaces, and it should not be blank";
 
     /*
-     * The first character of the address must be a alphanumeric char. No restrictions on subsequent chars
-     * otherwise " " (a blank string) becomes a valid input.
+     * The first character of the address must be a alphanumeric character, otherwise " " (a blank string) becomes a
+     * valid input. No restrictions on subsequent characters.
      */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}][a-zA-Z0-9\\s\\W]*";
+    public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{ASCII}]*";
 
-    public final String fullName;
+    private final String name;
 
     /**
      * Constructs a {@code Name}.
@@ -29,7 +29,7 @@ public class Name {
     public Name(String name) {
         requireNonNull(name);
         checkArgument(isValidName(name), MESSAGE_CONSTRAINTS);
-        fullName = name;
+        this.name = name;
     }
 
     /**
@@ -39,23 +39,22 @@ public class Name {
         return test.matches(VALIDATION_REGEX);
     }
 
-
     @Override
     public String toString() {
-        return fullName;
+        return this.name;
     }
 
     @Override
     public boolean equals(Object other) {
         return other == this // short circuit if same object
                 || (other instanceof Name // instanceof handles nulls
-                    && this.fullName.toLowerCase().equals(((Name) other).fullName.toLowerCase()))
+                    && this.name.equalsIgnoreCase(((Name) other).name))
                 || (other instanceof String
-                    && this.fullName.toLowerCase().equals(((String) other).toLowerCase()));
+                    && this.name.equalsIgnoreCase((String) other));
     }
 
     @Override
     public int hashCode() {
-        return this.fullName.toLowerCase().hashCode();
+        return this.name.toLowerCase().hashCode();
     }
 }

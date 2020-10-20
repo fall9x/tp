@@ -1,16 +1,16 @@
 package chopchop.ui;
 
+import java.util.logging.Logger;
+
+import chopchop.MainApp;
+import chopchop.commons.core.LogsCenter;
+import chopchop.commons.util.StringUtil;
 import chopchop.logic.Logic;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import chopchop.MainApp;
-import chopchop.commons.core.LogsCenter;
-import chopchop.commons.util.StringUtil;
-
-import java.util.logging.Logger;
 
 /**
  * The manager of the UI component.

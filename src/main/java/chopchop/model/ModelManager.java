@@ -1,66 +1,54 @@
 package chopchop.model;
 
+import static chopchop.commons.util.CollectionUtil.requireAllNonNull;
+import static java.util.Objects.requireNonNull;
+
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.function.Predicate;
-
-import chopchop.model.recipe.Recipe;
-import chopchop.model.recipe.RecipeBook;
-import chopchop.model.recipe.ReadOnlyRecipeBook;
-
-import chopchop.model.ingredient.Ingredient;
-import chopchop.model.ingredient.IngredientBook;
-import chopchop.model.ingredient.ReadOnlyIngredientBook;
-
-import chopchop.model.attributes.Name;
+import java.util.logging.Logger;
 
 import chopchop.commons.core.GuiSettings;
 import chopchop.commons.core.LogsCenter;
-
+import chopchop.model.ingredient.Ingredient;
+import chopchop.model.recipe.Recipe;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
-import static java.util.Objects.requireNonNull;
-import static chopchop.commons.util.CollectionUtil.requireAllNonNull;
-
-
 /**
- * Represents the in-memory model of the recipe book data.
+ * Represents the in-memory model of the recipe and ingredient book data.
  */
 public class ModelManager implements Model {
     private static final Logger logger = LogsCenter.getLogger(ModelManager.class);
 
-    private final RecipeBook recipeBook;
-    private final IngredientBook ingredientBook;
     private final UserPrefs userPrefs;
+    private final EntryBook<Recipe> recipeBook;
+    private final EntryBook<Ingredient> ingredientBook;
     private final FilteredList<Recipe> filteredRecipes;
     private final FilteredList<Ingredient> filteredIngredients;
 
-
     /**
-     * Initializes a ModelManager with the given recipeBook and userPrefs.
+     * Initializes a ModelManager with the given RecipeBook, IngredientBook and userPrefs.
      */
-    public ModelManager(ReadOnlyRecipeBook recipeBook, ReadOnlyIngredientBook ingredientBook,
+    public ModelManager(ReadOnlyEntryBook<Recipe> recipeBook, ReadOnlyEntryBook<Ingredient> ingredientBook,
                         ReadOnlyUserPrefs userPrefs) {
         super();
         requireAllNonNull(recipeBook, ingredientBook, userPrefs);
 
-        logger.fine("Initializing with recipe book: " + recipeBook + " and user prefs " + userPrefs);
-        this.userPrefs = new UserPrefs(userPrefs);
-        this.recipeBook = new RecipeBook(recipeBook);
-        filteredRecipes = new FilteredList<Recipe>(this.recipeBook.getFoodEntryList());
-        logger.fine("Initializing with ingredient book: " + ingredientBook + " and user prefs " + userPrefs);
-        this.ingredientBook = new IngredientBook(ingredientBook);
-        filteredIngredients = new FilteredList<Ingredient>(this.ingredientBook.getFoodEntryList());
+        logger.fine("Initializing with recipe book: " + recipeBook + ", ingredient book: " + ingredientBook
+                + " and user prefs " + userPrefs);
 
+        this.userPrefs = new UserPrefs(userPrefs);
+        this.recipeBook = new EntryBook<>(recipeBook);
+        this.ingredientBook = new EntryBook<>(ingredientBook);
+
+        this.filteredRecipes = new FilteredList<>(this.recipeBook.getEntryList());
+        this.filteredIngredients = new FilteredList<>(this.ingredientBook.getEntryList());
     }
 
     public ModelManager() {
-        this(new RecipeBook(), new IngredientBook(), new UserPrefs());
+        this(new EntryBook<>(), new EntryBook<>(), new UserPrefs());
     }
-
-    //=========== UserPrefs ==================================================================================
 
     @Override
     public void setUserPrefs(ReadOnlyUserPrefs userPrefs) {
@@ -70,98 +58,86 @@ public class ModelManager implements Model {
 
     @Override
     public ReadOnlyUserPrefs getUserPrefs() {
-        return userPrefs;
+        return this.userPrefs;
     }
 
     @Override
     public GuiSettings getGuiSettings() {
-        return userPrefs.getGuiSettings();
+        return this.userPrefs.getGuiSettings();
     }
 
     @Override
     public void setGuiSettings(GuiSettings guiSettings) {
         requireNonNull(guiSettings);
-        userPrefs.setGuiSettings(guiSettings);
+        this.userPrefs.setGuiSettings(guiSettings);
     }
 
     @Override
     public Path getRecipeBookFilePath() {
-        return userPrefs.getRecipeBookFilePath();
+        return this.userPrefs.getRecipeBookFilePath();
     }
 
     @Override
     public void setRecipeBookFilePath(Path recipeBookFilePath) {
         requireNonNull(recipeBookFilePath);
-        userPrefs.setRecipeBookFilePath(recipeBookFilePath);
+        this.userPrefs.setRecipeBookFilePath(recipeBookFilePath);
     }
 
-
-
-    //=========== AddressBook ================================================================================
-
     @Override
-    public void setRecipeBook(ReadOnlyRecipeBook recipeBook) {
+    public void setRecipeBook(ReadOnlyEntryBook<Recipe> recipeBook) {
         this.recipeBook.resetData(recipeBook);
     }
 
     @Override
-    public ReadOnlyRecipeBook getRecipeBook() {
-        return recipeBook;
+    public ReadOnlyEntryBook<Recipe> getRecipeBook() {
+        return this.recipeBook;
     }
 
     @Override
     public boolean hasRecipe(Recipe recipe) {
         requireNonNull(recipe);
-        return recipeBook.hasRecipe(recipe);
+        return this.recipeBook.has(recipe);
     }
 
     @Override
     public void deleteRecipe(Recipe target) {
-        recipeBook.removeRecipe(target);
+        this.recipeBook.remove(target);
     }
 
     @Override
     public void addRecipe(Recipe recipe) {
-        recipeBook.addRecipe(recipe);
-        updateFilteredRecipeList(PREDICATE_SHOW_ALL_RECIPES);
+        this.recipeBook.add(recipe);
+        this.updateFilteredRecipeList(PREDICATE_SHOW_ALL_ENTRIES);
     }
 
     @Override
     public void setRecipe(Recipe target, Recipe editedRecipe) {
         requireAllNonNull(target, editedRecipe);
 
-        recipeBook.setRecipe(target, editedRecipe);
+        this.recipeBook.set(target, editedRecipe);
     }
 
     @Override
     public Optional<Recipe> findRecipeWithName(String name) {
-        return this.findRecipeWithName(new Name(name));
-    }
-
-    @Override
-    public Optional<Recipe> findRecipeWithName(Name name) {
-        return this.recipeBook.getFoodEntryList()
+        return this.recipeBook.getEntryList()
             .stream()
-            .filter(r -> r.getName().equals(name))
+            .filter(recipe -> recipe.getName().equalsIgnoreCase(name))
             .findFirst();
     }
 
-
-    //=========== Filtered Recipe List Accessors =============================================================
-
     /**
      * Returns an unmodifiable view of the list of {@code Recipe} backed by the internal list of
-     * {@code versionedRecipeBook}
+     * {@code versionedEntryBook<Recipe>}
      */
     @Override
     public ObservableList<Recipe> getFilteredRecipeList() {
-        return filteredRecipes;
+        return this.filteredRecipes;
     }
 
     @Override
-    public void updateFilteredRecipeList(Predicate<FoodEntry> predicate) {
+    public void updateFilteredRecipeList(Predicate<? super Recipe> predicate) {
         requireNonNull(predicate);
-        filteredRecipes.setPredicate(predicate);
+        this.filteredRecipes.setPredicate(predicate);
     }
 
     /**
@@ -169,69 +145,60 @@ public class ModelManager implements Model {
      */
     @Override
     public Path getIngredientBookFilePath() {
-        return userPrefs.getIngredientBookFilePath();
+        return this.userPrefs.getIngredientBookFilePath();
     }
 
     /**
      * Sets the user prefs' address book file path.
      *
-     * @param indBookFilePath
+     * @param ingredientBookFilePath
      */
     @Override
-    public void setIngredientBookFilePath(Path indBookFilePath) {
-        requireNonNull(indBookFilePath);
-        userPrefs.setIngredientBookFilePath(indBookFilePath);
+    public void setIngredientBookFilePath(Path ingredientBookFilePath) {
+        requireNonNull(ingredientBookFilePath);
+        this.userPrefs.setIngredientBookFilePath(ingredientBookFilePath);
     }
 
-    //=========== Filtered Ingredient List Accessors =============================================================
-
-    public void setIngredientBook(ReadOnlyIngredientBook ingredientBook) {
+    public void setIngredientBook(ReadOnlyEntryBook<Ingredient> ingredientBook) {
         this.ingredientBook.resetData(ingredientBook);
     }
 
     @Override
-    public ReadOnlyIngredientBook getIngredientBook() {
-        return ingredientBook;
+    public ReadOnlyEntryBook<Ingredient> getIngredientBook() {
+        return this.ingredientBook;
     }
 
     @Override
-    public boolean hasIngredient(Ingredient ind) {
-        requireNonNull(ind);
-        return ingredientBook.hasIngredient(ind);
+    public boolean hasIngredient(Ingredient ingredient) {
+        requireNonNull(ingredient);
+        return this.ingredientBook.has(ingredient);
     }
 
     @Override
     public void deleteIngredient(Ingredient target) {
-        ingredientBook.removeIngredient(target);
+        this.ingredientBook.remove(target);
     }
 
     @Override
-    public void addIngredient(Ingredient ind) {
-        ingredientBook.addIngredient(ind);
-        updateFilteredIngredientList(PREDICATE_SHOW_ALL_INGREDIENTS);
+    public void addIngredient(Ingredient ingredient) {
+        this.ingredientBook.add(ingredient);
+        this.updateFilteredIngredientList(PREDICATE_SHOW_ALL_ENTRIES);
     }
 
     @Override
     public void setIngredient(Ingredient target, Ingredient editedIngredient) {
         requireAllNonNull(target, editedIngredient);
 
-        ingredientBook.setIngredient(target, editedIngredient);
+        this.ingredientBook.set(target, editedIngredient);
     }
 
     @Override
     public Optional<Ingredient> findIngredientWithName(String name) {
-        return this.findIngredientWithName(new Name(name));
-    }
-
-    @Override
-    public Optional<Ingredient> findIngredientWithName(Name name) {
-        return this.ingredientBook.getFoodEntryList()
+        return this.ingredientBook.getEntryList()
             .stream()
-            .filter(r -> r.getName().equals(name))
+            .filter(ingredient -> ingredient.getName().equalsIgnoreCase(name))
             .findFirst();
     }
-
-    //=========== Filtered Ingredient List Accessors =============================================================
 
     /**
      * Returns an unmodifiable view of the list of {@code Ingredient} backed by the internal list of
@@ -239,15 +206,13 @@ public class ModelManager implements Model {
      */
     @Override
     public ObservableList<Ingredient> getFilteredIngredientList() {
-        return filteredIngredients;
+        return this.filteredIngredients;
     }
 
-
     @Override
-    public void updateFilteredIngredientList(Predicate<FoodEntry> predicate) {
+    public void updateFilteredIngredientList(Predicate<? super Ingredient> predicate) {
         requireNonNull(predicate);
-        filteredIngredients.setPredicate(predicate);
-
+        this.filteredIngredients.setPredicate(predicate);
     }
 
     @Override
@@ -265,12 +230,10 @@ public class ModelManager implements Model {
         // state check
         ModelManager other = (ModelManager) obj;
 
-        return recipeBook.equals(other.recipeBook)
-                && userPrefs.equals(other.userPrefs)
-                && filteredRecipes.equals(other.filteredRecipes)
-                && ingredientBook.equals(other.ingredientBook)
-                && filteredIngredients.equals(other.filteredIngredients);
-
+        return this.userPrefs.equals(other.userPrefs)
+                && this.recipeBook.equals(other.recipeBook)
+                && this.filteredRecipes.equals(other.filteredRecipes)
+                && this.ingredientBook.equals(other.ingredientBook)
+                && this.filteredIngredients.equals(other.filteredIngredients);
     }
-
 }

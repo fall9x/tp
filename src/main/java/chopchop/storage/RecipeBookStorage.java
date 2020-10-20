@@ -3,8 +3,10 @@ package chopchop.storage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
+
 import chopchop.commons.exceptions.DataConversionException;
-import chopchop.model.recipe.ReadOnlyRecipeBook;
+import chopchop.model.ReadOnlyEntryBook;
+import chopchop.model.recipe.Recipe;
 
 public interface RecipeBookStorage {
     /**
@@ -13,28 +15,26 @@ public interface RecipeBookStorage {
     Path getRecipeBookFilePath();
 
     /**
-     * Returns RecipeBook data as a {@link ReadOnlyRecipeBook}.
+     * Returns RecipeBook data as a {@link ReadOnlyEntryBook}.
      *   Returns {@code Optional.empty()} if storage file is not found.
      * @throws DataConversionException if the data in storage is not in the expected format.
-     * @throws IOException if there was any problem when reading from the storage.
      */
-    Optional<ReadOnlyRecipeBook> readRecipeBook() throws DataConversionException, IOException;
+    Optional<ReadOnlyEntryBook<Recipe>> readRecipeBook() throws DataConversionException;
 
     /**
      * @see #getRecipeBookFilePath()
      */
-    Optional<ReadOnlyRecipeBook> readRecipeBook(Path filePath) throws DataConversionException, IOException;
+    Optional<ReadOnlyEntryBook<Recipe>> readRecipeBook(Path filePath) throws DataConversionException;
 
     /**
-     * Saves the given {@link ReadOnlyRecipeBook} to the storage.
+     * Saves the given {@link ReadOnlyEntryBook} to the storage.
      * @param recipeBook cannot be null.
      * @throws IOException if there was any problem writing to the file.
      */
-    void saveRecipeBook(ReadOnlyRecipeBook recipeBook) throws IOException;
+    void saveRecipeBook(ReadOnlyEntryBook<Recipe> recipeBook) throws IOException;
 
     /**
-     * @see #saveRecipeBook(ReadOnlyRecipeBook)
+     * @see #saveRecipeBook(ReadOnlyEntryBook)
      */
-    void saveRecipeBook(ReadOnlyRecipeBook recipeBook, Path filePath) throws IOException;
-
+    void saveRecipeBook(ReadOnlyEntryBook<Recipe> recipeBook, Path filePath) throws IOException;
 }

@@ -1,6 +1,5 @@
 package chopchop.testutil;
 
-import chopchop.model.attributes.Name;
 import chopchop.model.attributes.Quantity;
 import chopchop.model.attributes.ExpiryDate;
 import chopchop.model.ingredient.Ingredient;
@@ -12,7 +11,7 @@ public class IngredientBuilder {
     public static final int DEFAULT_QTY = 3;
     public static final String DEFAULT_EXPIRY = "2020-10-12";
 
-    private Name name;
+    private String name;
     private Quantity qty;
     private ExpiryDate expDate;
 
@@ -22,7 +21,7 @@ public class IngredientBuilder {
      */
     public IngredientBuilder() {
         qty     = Count.of(DEFAULT_QTY);
-        name    = new Name(DEFAULT_NAME);
+        name    = DEFAULT_NAME;
         expDate = new ExpiryDate(DEFAULT_EXPIRY);
     }
 
@@ -40,7 +39,7 @@ public class IngredientBuilder {
      * Sets the {@code Name} of the {@code Person} that we are building.
      */
     public IngredientBuilder withName(String name) {
-        this.name = new Name(name);
+        this.name = name;
         return this;
     }
 

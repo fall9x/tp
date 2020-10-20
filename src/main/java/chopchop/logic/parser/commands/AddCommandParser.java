@@ -15,7 +15,6 @@ import chopchop.model.recipe.Recipe;
 import chopchop.model.ingredient.Ingredient;
 import chopchop.model.ingredient.IngredientReference;
 
-import chopchop.model.attributes.Name;
 import chopchop.model.attributes.Step;
 import chopchop.model.attributes.Quantity;
 import chopchop.model.attributes.ExpiryDate;
@@ -91,16 +90,20 @@ public class AddCommandParser {
 
         // looks weird, but basically this extracts the /qty and /expiry arguments (if present),
         // then constructs the command from it -- while returning any intermediate error messages.
-        return Result.transpose(qtys
-            .stream()
-            .findFirst()
-            .map(Quantity::parse))
-            .then(qty -> Result.transpose(exps
+        try {
+            return Result.transpose(qtys
                 .stream()
                 .findFirst()
-                .map(e -> Result.of(e)))
-                .map(exp -> createAddIngredientCommand(name, qty, exp))
-            );
+                .map(Quantity::parse))
+                .then(qty -> Result.transpose(exps
+                    .stream()
+                    .findFirst()
+                    .map(e -> Result.of(e)))
+                    .map(exp -> createAddIngredientCommand(name, qty, exp))
+                );
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
     }
 
     /**
@@ -194,7 +197,7 @@ public class AddCommandParser {
         List<IngredientReference> ingredients, List<Step> steps) {
 
         return new AddRecipeCommand(new Recipe(
-            new Name(name), ingredients, steps
+            name, ingredients, steps
         ));
     }
 
@@ -202,9 +205,9 @@ public class AddCommandParser {
     private static AddIngredientCommand createAddIngredientCommand(String name,
         Optional<Quantity> qty, Optional<String> expiry) {
 
-        return new AddIngredientCommand(new Ingredient(new Name(name),
+        return new AddIngredientCommand(new Ingredient(name,
             qty.orElse(Count.of(1)),
-            expiry.map(ExpiryDate::new).orElse(ExpiryDate.none())
+            expiry.map(ExpiryDate::new).orElse(null)
         ));
     }
 }

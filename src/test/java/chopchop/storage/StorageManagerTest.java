@@ -5,15 +5,16 @@ import static chopchop.testutil.TypicalRecipes.getTypicalRecipeBook;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.nio.file.Path;
+
+import chopchop.model.EntryBook;
+import chopchop.model.ReadOnlyEntryBook;
+import chopchop.model.ingredient.Ingredient;
+import chopchop.model.recipe.Recipe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import chopchop.commons.core.GuiSettings;
 import chopchop.model.UserPrefs;
-import chopchop.model.ingredient.IngredientBook;
-import chopchop.model.ingredient.ReadOnlyIngredientBook;
-import chopchop.model.recipe.ReadOnlyRecipeBook;
-import chopchop.model.recipe.RecipeBook;
 
 public class StorageManagerTest {
 
@@ -27,7 +28,7 @@ public class StorageManagerTest {
         JsonIngredientBookStorage ingredientBookStorage = new JsonIngredientBookStorage(getTempFilePath("ab"));
         JsonRecipeBookStorage recipeBookStorage = new JsonRecipeBookStorage(getTempFilePath("abc"));
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(getTempFilePath("prefs"));
-        storageManager = new StorageManager(ingredientBookStorage, recipeBookStorage, userPrefsStorage);
+        storageManager = new StorageManager(recipeBookStorage, ingredientBookStorage, userPrefsStorage);
     }
 
     private Path getTempFilePath(String fileName) {
@@ -55,10 +56,10 @@ public class StorageManagerTest {
          * {@link JsonAddressBookStorage} class.
          * More extensive testing of UserPref saving/reading is done in {@link JsonAddressBookStorageTest} class.
          */
-        IngredientBook original = getTypicalIngredientBook();
+        EntryBook<Ingredient> original = getTypicalIngredientBook();
         storageManager.saveIngredientBook(original);
-        ReadOnlyIngredientBook retrieved = storageManager.readIngredientBook().get();
-        assertEquals(original, new IngredientBook(retrieved));
+        ReadOnlyEntryBook<Ingredient> retrieved = storageManager.readIngredientBook().get();
+        assertEquals(original, new EntryBook<>(retrieved));
     }
 
     @Test
@@ -73,10 +74,10 @@ public class StorageManagerTest {
          * {@link JsonAddressBookStorage} class.
          * More extensive testing of UserPref saving/reading is done in {@link JsonAddressBookStorageTest} class.
          */
-        RecipeBook original = getTypicalRecipeBook();
+        EntryBook<Recipe> original = getTypicalRecipeBook();
         storageManager.saveRecipeBook(original);
-        ReadOnlyRecipeBook retrieved = storageManager.readRecipeBook().get();
-        assertEquals(original, new RecipeBook(retrieved));
+        ReadOnlyEntryBook<Recipe> retrieved = storageManager.readRecipeBook().get();
+        assertEquals(original, new EntryBook<>(retrieved));
     }
 
     @Test

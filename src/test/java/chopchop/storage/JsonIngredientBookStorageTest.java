@@ -10,11 +10,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
+
+import chopchop.model.EntryBook;
+import chopchop.model.ReadOnlyEntryBook;
+import chopchop.model.ingredient.Ingredient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import chopchop.commons.exceptions.DataConversionException;
-import chopchop.model.ingredient.IngredientBook;
-import chopchop.model.ingredient.ReadOnlyIngredientBook;
 
 public class JsonIngredientBookStorageTest {
     private static final Path TEST_DATA_FOLDER = Paths.get("src", "test", "data", "JsonIndBookStorageTest");
@@ -27,7 +29,7 @@ public class JsonIngredientBookStorageTest {
         assertThrows(NullPointerException.class, () -> readIngredientBook(null));
     }
 
-    private java.util.Optional<ReadOnlyIngredientBook> readIngredientBook(String filePath) throws Exception {
+    private java.util.Optional<ReadOnlyEntryBook<Ingredient>> readIngredientBook(String filePath) throws Exception {
         return new JsonIngredientBookStorage(Paths.get(filePath))
             .readIngredientBook(addToTestDataPathIfNotNull(filePath));
     }
@@ -61,27 +63,27 @@ public class JsonIngredientBookStorageTest {
     @Test
     public void readAndSaveIngredientBook_allInOrder_success() throws Exception {
         Path filePath = testFolder.resolve("TempIngredientBook.json");
-        IngredientBook original = getTypicalIngredientBook();
+        EntryBook<Ingredient> original = getTypicalIngredientBook();
         JsonIngredientBookStorage jsonIngredientBookStorage = new JsonIngredientBookStorage(filePath);
 
         // Save in new file and read back
         jsonIngredientBookStorage.saveIngredientBook(original, filePath);
-        ReadOnlyIngredientBook readBack = jsonIngredientBookStorage.readIngredientBook(filePath).get();
-        assertEquals(original.getFoodEntryList(), new IngredientBook(readBack).getFoodEntryList());
+        ReadOnlyEntryBook<Ingredient> readBack = jsonIngredientBookStorage.readIngredientBook(filePath).get();
+        assertEquals(original.getEntryList(), new EntryBook<>(readBack).getEntryList());
 
-        System.out.println(original.getFoodEntryList().stream().map(x-> x.toString()).collect(Collectors.joining()));
+        System.out.println(original.getEntryList().stream().map(x-> x.toString()).collect(Collectors.joining()));
         // Modify data, overwrite exiting file, and read back
-        original.addIngredient(CUSTARD);
-        original.removeIngredient(BANANA);
+        original.add(CUSTARD);
+        original.remove(BANANA);
         jsonIngredientBookStorage.saveIngredientBook(original, filePath);
         readBack = jsonIngredientBookStorage.readIngredientBook(filePath).get();
-        assertEquals(original, new IngredientBook(readBack));
+        assertEquals(original, new EntryBook<>(readBack));
 
         // Save and read without specifying file path
-        original.addIngredient(BANANA);
+        original.add(BANANA);
         jsonIngredientBookStorage.saveIngredientBook(original); // file path not specified
         readBack = jsonIngredientBookStorage.readIngredientBook().get(); // file path not specified
-        assertEquals(original, new IngredientBook(readBack));
+        assertEquals(original, new EntryBook<>(readBack));
 
     }
 
@@ -93,7 +95,7 @@ public class JsonIngredientBookStorageTest {
     /**
      * Saves {@code addressBook} at the specified {@code filePath}.
      */
-    private void saveIngredientBook(ReadOnlyIngredientBook addressBook, String filePath) {
+    private void saveIngredientBook(ReadOnlyEntryBook<Ingredient> addressBook, String filePath) {
         try {
             new JsonIngredientBookStorage(Paths.get(filePath))
                 .saveIngredientBook(addressBook, addToTestDataPathIfNotNull(filePath));
@@ -104,7 +106,7 @@ public class JsonIngredientBookStorageTest {
 
     @Test
     public void saveIngredientBook_nullFilePath_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> saveIngredientBook(new IngredientBook(), null));
+        assertThrows(NullPointerException.class, () -> saveIngredientBook(new EntryBook<>(), null));
     }
 
 }
