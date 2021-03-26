@@ -1,6 +1,7 @@
 package chopchop.commons.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static chopchop.testutil.Assert.assertThrows;
 
@@ -100,6 +101,37 @@ public class ConfigUtilTest {
         readBack = ConfigUtil.readConfig(configFilePath).get();
         assertEquals(original, readBack);
     }
+
+    @Test
+    public void test_stuff() {
+        var c = new Config();
+        c.setLogLevel(Level.FINE);
+        assertEquals(Level.FINE, c.getLogLevel());
+
+        var configFilePath = tempDir.resolve("owo.json");
+        c.setUserPrefsFilePath(configFilePath);
+        assertEquals(configFilePath, c.getUserPrefsFilePath());
+
+        var c2 = new Config();
+        var c3 = new Config();
+        var c4 = new Config();
+        c4.setUserPrefsFilePath(configFilePath);
+
+        assertEquals(c, c);
+        assertEquals(c2, c3);
+
+        assertNotEquals(c, c2);
+        assertNotEquals(c, "");
+        assertNotEquals(c3, c4);
+
+
+        c.hashCode();
+        c.toString();
+    }
+
+
+
+
 
     private void save(Config config, String configFileInTestDataFolder) throws IOException {
         Path configFilePath = addToTestDataPathIfNotNull(configFileInTestDataFolder);

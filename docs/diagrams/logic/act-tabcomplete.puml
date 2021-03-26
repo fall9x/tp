@@ -1,0 +1,20 @@
+@startuml
+!include ../style.puml
+start
+	:user presses tab;
+	://LogicManager// calls getCompletionFor();
+
+	if () then ([valid partial command])
+		:get required completion;
+		if () then ([not **NONE**])
+			:complete item;
+			:append to input string;
+		else ([else])
+			:do nothing;
+		endif
+	else ([else])
+		:do nothing;
+	endif
+	:return completed input back to //LogicManager//;
+stop
+@enduml

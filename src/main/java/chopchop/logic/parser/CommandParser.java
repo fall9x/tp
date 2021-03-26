@@ -5,18 +5,26 @@ package chopchop.logic.parser;
 import java.util.List;
 import java.util.ArrayList;
 
-import chopchop.util.Pair;
-import chopchop.util.Result;
-import chopchop.util.Strings;
-import chopchop.util.StringView;
-
+import chopchop.commons.util.Pair;
+import chopchop.commons.util.Result;
+import chopchop.commons.util.Strings;
+import chopchop.commons.util.StringView;
 import chopchop.logic.commands.Command;
+import chopchop.logic.commands.ClearCommand;
+import chopchop.logic.commands.QuitCommand;
+import chopchop.logic.commands.RedoCommand;
+import chopchop.logic.commands.UndoCommand;
 
 import static chopchop.logic.parser.commands.AddCommandParser.parseAddCommand;
+import static chopchop.logic.parser.commands.DeleteCommandParser.parseDeleteCommand;
+import static chopchop.logic.parser.commands.EditCommandParser.parseEditCommand;
+import static chopchop.logic.parser.commands.FilterCommandParser.parseFilterCommand;
+import static chopchop.logic.parser.commands.FindCommandParser.parseFindCommand;
 import static chopchop.logic.parser.commands.HelpCommandParser.parseHelpCommand;
 import static chopchop.logic.parser.commands.ListCommandParser.parseListCommand;
-import static chopchop.logic.parser.commands.FindCommandParser.parseFindCommand;
-import static chopchop.logic.parser.commands.DeleteCommandParser.parseDeleteCommand;
+import static chopchop.logic.parser.commands.MakeCommandParser.parseMakeCommand;
+import static chopchop.logic.parser.commands.StatsCommandParser.parseStatsCommand;
+import static chopchop.logic.parser.commands.ViewCommandParser.parseViewCommand;
 
 public class CommandParser {
 
@@ -27,20 +35,21 @@ public class CommandParser {
 
             if (input.find('/') != 0) {
                 break;
+            } else if (input.size() == 1) {
+                return Result.error("Expected argument name after '/'");
             }
 
-            // TODO: this won't handle things like slashes in dates. ideally we want to
-            // split based on " /" (ie. there must be a leading space before the slash),
-            // but that requires changing StringView::bisect. later.
-            var currentArg = input.drop(1).bisect('/', input);
+            var pair = splitUntilNextSlash(input.drop(1));
+            var self = new StringView(pair.fst());
+            input = pair.snd();
 
             {
-                var argName = new StringView("");
-                var argValue = new StringView("");
 
-                currentArg.bisect(argName, ' ', argValue);
+                var argValue = new StringView("");
+                var argName = self.bisect(' ', argValue);
+
                 if (argName.isEmpty()) {
-                    return Result.error("argument name cannot be empty");
+                    return Result.error("Expected argument name after '/'");
                 }
 
                 ret.add(Pair.of(new ArgName(argName.trim().toString()), argValue.trim().toString()));
@@ -49,8 +58,6 @@ public class CommandParser {
             if (input.isEmpty()) {
                 break;
             }
-
-            input = input.undrop(1);
         }
 
         return Result.of(ret);
@@ -64,26 +71,19 @@ public class CommandParser {
      * @param input the input string to parse
      * @return      the parsed components, iff parsing succeeded; an empty optional otherwise.
      */
-    private Result<CommandArguments> parseArgs(String input) {
+    public Result<CommandArguments> parseArgs(String input) {
 
         var sv = new StringView(input);
 
         var x = new StringView("");
         var xs = new StringView("");
 
-        sv.bisect(x, ' ', xs);
+        var command = sv.bisect(' ', xs).toString().strip();
 
-        var command = x.toString().strip();
+        var p = splitUntilNextSlash(xs);
+        var theRest = p.fst();
 
-        xs.bisect(x, '/', xs);
-        var theRest = x.toString().strip();
-
-        if (!xs.isEmpty()) {
-            xs = xs.undrop(1);
-            assert xs.at(0) == '/';
-        }
-
-        return this.parseNamedArguments(xs)
+        return this.parseNamedArguments(p.snd())
             .map(args -> new CommandArguments(command, theRest, args));
     }
 
@@ -101,14 +101,52 @@ public class CommandParser {
                 switch (args.getCommand()) {
 
                 case Strings.COMMAND_ADD:       return parseAddCommand(args);
+                case Strings.COMMAND_EDIT:      return parseEditCommand(args);
                 case Strings.COMMAND_HELP:      return parseHelpCommand(args);
                 case Strings.COMMAND_FIND:      return parseFindCommand(args);
                 case Strings.COMMAND_LIST:      return parseListCommand(args);
+                case Strings.COMMAND_MAKE:      return parseMakeCommand(args);
+                case Strings.COMMAND_VIEW:      return parseViewCommand(args);
+                case Strings.COMMAND_STATS:     return parseStatsCommand(args);
                 case Strings.COMMAND_DELETE:    return parseDeleteCommand(args);
+                case Strings.COMMAND_FILTER:    return parseFilterCommand(args);
+                case Strings.COMMAND_UNDO:      return ensureNoArgs(args, new UndoCommand());
+                case Strings.COMMAND_REDO:      return ensureNoArgs(args, new RedoCommand());
+                case Strings.COMMAND_QUIT:      return ensureNoArgs(args, new QuitCommand());
+                case Strings.COMMAND_CLEAR:     return ensureNoArgs(args, new ClearCommand());
 
                 default:
-                    return Result.error("unknown command '%s'", args.getCommand());
+                    return Result.error("Unknown command '%s'", args.getCommand());
                 }
             });
+    }
+
+
+
+    private Pair<String, StringView> splitUntilNextSlash(StringView input) {
+
+        int i = 0;
+        var sb = new StringBuilder();
+
+        for (; i < input.size(); i++) {
+            if (i + 1 < input.size() && input.at(i) == '\\' && input.at(i + 1) == '/') {
+                i += 1;
+                sb.append("/");
+            } else if (input.at(i) == '/') {
+                break;
+            } else {
+                sb.append(input.at(i));
+            }
+        }
+
+        return Pair.of(sb.toString().strip(), input.drop(i));
+    }
+
+    private Result<Command> ensureNoArgs(CommandArguments args, Command command) {
+        if (!args.getRemaining().isEmpty() || !args.getAllArguments().isEmpty()) {
+            return Result.error("'%s' command takes no arguments", args.getCommand());
+        } else {
+            return Result.of(command);
+        }
     }
 }

@@ -21,14 +21,38 @@ checkstyle {
 }
 
 test {
+    systemProperty 'testfx.setup.timeout', '60000'
+
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+
+    // exclude '**/*ui*'
 
     testLogging {
         // showStandardStreams = true
         exceptionFormat "full"
     }
 }
+
+task headless {
+    doFirst {
+        println 'Setting headless mode properties.'
+        test {
+            systemProperties = [
+                    'java.awt.headless': 'true',
+                    'testfx.headless': 'true',
+                    'testfx.robot': 'glass',
+                    'glass.platform': 'monocle',
+                    'monocle.platform': 'headless',
+                    'prism.order': 'sw',
+                    'prism.text': 't2k',
+                    'prism.verbose': 'true'
+            ]
+        }
+    }
+}
+
+test.mustRunAfter headless
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xdiags:verbose"
@@ -51,6 +75,7 @@ task coverage(type: JacocoReport) {
 }
 
 dependencies {
+    String testFxVersion = '4.0.16-alpha'
     String jUnitVersion = '5.4.0'
     String javaFxVersion = '11'
 
@@ -70,13 +95,22 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.7.0'
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.7.4'
 
+    testImplementation group: 'org.testfx', name: 'testfx-core', version: testFxVersion
+
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: jUnitVersion
 
+    testRuntimeOnly group: 'org.testfx', name: 'openjfx-monocle', version: 'jdk-11+26'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: jUnitVersion
+
+    compile group: 'com.jfoenix', name: 'jfoenix', version: '9.0.10'
 }
 
 shadowJar {
-    archiveName = 'chopchop.jar'
+    archiveFileName = 'chopchop.jar'
 }
 
-defaultTasks 'clean', 'test'
+run {
+    enableAssertions = true
+}
+
+defaultTasks 'clean', 'headless', 'test'

@@ -1,0 +1,29 @@
+@startuml
+!include ../style.puml
+skinparam arrowThickness 1.1
+skinparam arrowColor LOGIC_COLOR_T4
+skinparam classBackgroundColor MODEL_COLOR
+skinparam classAttributeFontColor white
+skinparam classAttributeIconSize 0
+
+package model {
+	interface Quantity <<interface>> {
+		+compatibleWith(Quantity): boolean
+		+add(Quantity): Quantity
+		+negate(): Quantity
+
+		{static} +parse(String): Result<Quantity>
+	}
+	package units {
+		class Mass
+		class Count
+		class Volume
+	}
+}
+
+show Quantity methods
+Mass ..|> Quantity
+Count ..|> Quantity
+Volume ..|> Quantity
+
+@enduml

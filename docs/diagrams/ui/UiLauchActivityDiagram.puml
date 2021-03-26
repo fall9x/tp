@@ -1,0 +1,28 @@
+@startuml
+hide empty description
+state "User launches application, entry point: Main" as State1
+state "Main invokes MainApp" as State2
+state "MainApp initialises the UiManager and calls start()" as State3
+state "UiManager loads MainWindow" as State4
+state "MainWindow loads CommandBox, CommandOutput, Statsbox and DisplayController" as State5
+state "DisplayController loads RecipeViewPanel, IngredientViewPanel, RecommendationViewPanel" as State6
+state "MainApp calls loadsEntries()" as State7
+state "DisplayNavigator calls initialLoad()" as State8
+state "DisplayController displays the the RecipeViewPanel" as State9
+state "DisplayController displays the a welcomeMesasge" as State10
+state c1 <<choice>>
+
+[*] --> State1
+State1 --> State2
+State2 --> State3
+State3 --> State4
+State4 --> State5
+State5 --> State6
+State6 --> State7
+State7 --> State8
+State8 --> c1
+c1 --> State9 : [model.getRecipeBook().EntryList().size() > 0]
+c1 --> State10: [else]
+State9 --> [*]
+State10 --> [*]
+@enduml

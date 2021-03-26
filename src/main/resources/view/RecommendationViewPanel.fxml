@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXMasonryPane?>
+<?import javafx.scene.control.ScrollPane?>
+
+<ScrollPane fx:id="recommendationPanel" fitToWidth="true" hbarPolicy="NEVER"
+            xmlns="http://javafx.com/javafx/10.0.2-internal"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <JFXMasonryPane fx:id="recommendationGridView" VSpacing="12" HSpacing="12" cellHeight="126.0" cellWidth="148.0"/>
+</ScrollPane>

@@ -1,0 +1,23 @@
+@startuml
+!include style.puml
+show members
+hide empty members
+skinparam classAttributeFontColor #FFFFFF
+skinparam arrowThickness 1.1
+skinparam arrowColor MODEL_COLOR
+skinparam classBackgroundColor MODEL_COLOR
+Class UsageList<T extends Entry>
+class "{abstract}\nUsage" as Usage {
+name : String
+date : LocalDateTime
+}
+Class IngredientUsage
+Class RecipeUsage
+Class "<<interface>>\nQuantity" as Qty
+
+
+UsageList *--> "*" Usage
+IngredientUsage -up-|> Usage
+RecipeUsage -up-|> Usage
+Qty -up-> IngredientUsage
+@enduml

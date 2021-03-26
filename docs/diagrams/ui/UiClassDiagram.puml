@@ -1,0 +1,84 @@
+@startuml
+!include ../style.puml
+skinparam arrowThickness 1.1
+skinparam arrowColor UI_COLOR_T4
+skinparam classBackgroundColor UI_COLOR
+
+package UI <<Rectangle>>{
+Interface Ui <<Interface>>
+Class "{abstract}\nUiPart" as UiPart
+Class UiManager
+Class MainWindow
+Class CommandOutput
+Class RecipeViewPanel
+Class RecipeCard
+Class CommandBox
+Class IngredientViewPanel
+Class IngredientCard
+Class DisplayController
+Class DisplayNavigator
+Class StatsBox
+Class RecipeDisplay
+Class RecommendationViewPanel
+Class RecommendationCard
+}
+
+package Model <<Rectangle>> {
+Class HiddenModel #FFFFFF
+}
+
+package Logic <<Rectangle>> {
+Class HiddenLogic #FFFFFF
+}
+
+Class HiddenOutside #FFFFFF
+HiddenOutside ..> Ui
+
+UiManager .left.|> Ui
+UiManager -down-> MainWindow
+MainWindow *-down-> CommandOutput
+MainWindow *-down-> StatsBox
+MainWindow *-down-> DisplayController
+DisplayController -down-> RecipeViewPanel
+DisplayController -down-> IngredientViewPanel
+DisplayController -down-> RecipeDisplay
+MainWindow *-down-> CommandBox
+DisplayController o-down-> RecommendationViewPanel
+DisplayNavigator -right-> "1" DisplayController
+
+RecipeViewPanel *-down-> RecipeCard
+IngredientViewPanel *-down-> IngredientCard
+RecommendationViewPanel *-down-> RecommendationCard
+
+MainWindow -left-|> UiPart
+
+CommandOutput --|> UiPart
+CommandBox --|> UiPart
+RecipeViewPanel --|> UiPart
+RecipeCard --|> UiPart
+StatsBox --|> UiPart
+DisplayController --|> UiPart
+IngredientCard --|> UiPart
+RecipeDisplay --|> UiPart
+IngredientViewPanel --|> UiPart
+RecommendationViewPanel --|> UiPart
+RecommendationCard --|> UiPart
+
+RecipeCard ..> Model
+IngredientCard ..> Model
+RecommendationCard ..> Model
+UiManager -right-> Logic
+MainWindow -left-> Logic
+
+
+CommandBox -right[hidden]- CommandOutput
+CommandOutput -right[hidden]- StatsBox
+StatsBox -right[hidden]- DisplayController
+
+RecipeDisplay -right[hidden]- RecommendationViewPanel
+
+
+
+
+MainWindow -[hidden]-|> UiPart
+@enduml

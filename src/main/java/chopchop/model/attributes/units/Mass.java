@@ -1,7 +1,8 @@
 package chopchop.model.attributes.units;
 
-import chopchop.util.Result;
+import chopchop.commons.util.Result;
 import chopchop.model.attributes.Quantity;
+import chopchop.model.exceptions.IncompatibleIngredientsException;
 
 /**
  * This class represents a quantity of mass, eg. grams, kilograms, etc. For the purposes of this class,
@@ -9,7 +10,6 @@ import chopchop.model.attributes.Quantity;
  * ingredients).
  */
 public class Mass implements Quantity {
-
     private final double value;
     private final double ratio;
 
@@ -39,10 +39,9 @@ public class Mass implements Quantity {
     }
 
     @Override
-    public Result<Quantity> add(Quantity qty) {
-
+    public Result<Mass> add(Quantity qty) {
         if (!(qty instanceof Mass)) {
-            return Result.error("cannot add '%s' to '%s' (incompatible units)", qty, this);
+            return Result.error("Cannot add '%s' to '%s' (incompatible units)", qty, this);
         } else {
             var mass = (Mass) qty;
             var newval = this.value + (mass.value * (mass.ratio / this.ratio));
@@ -52,16 +51,44 @@ public class Mass implements Quantity {
     }
 
     @Override
+    public Mass negate() {
+        return new Mass(-this.value, this.ratio);
+    }
+
+    @Override
+    public boolean isZero() {
+        return (this.ratio * this.value) == 0;
+    }
+
+    @Override
+    public boolean isNegative() {
+        return (this.ratio * this.value) < 0;
+    }
+
+    @Override
+    public boolean compatibleWith(Quantity qty) {
+        return qty instanceof Mass;
+    }
+
+    @Override
+    public int compareTo(Quantity other) {
+        if (!(other instanceof Mass)) {
+            throw new IncompatibleIngredientsException(
+                    String.format("Cannot compare '%s' with '%s' (incompatible units)", other, this));
+        }
+
+        return Double.compare(this.value * this.ratio, ((Mass) other).value * ((Mass) other).ratio);
+    }
+
+    @Override
     public String toString() {
-        var unit = "";
+        var unit = "?";
         if (this.ratio == 1) {
             unit = "g";
         } else if (this.ratio == 1000) {
             unit = "kg";
         } else if (this.ratio == 0.001) {
             unit = "mg";
-        } else {
-            unit = "?";
         }
 
         return String.format("%s%s", Quantity.formatDecimalValue(this.value), unit);
@@ -85,11 +112,11 @@ public class Mass implements Quantity {
      * @return      the mass quantity, if the unit was valid.
      */
     public static Result<Quantity> of(double value, String unit) {
-        switch (unit) {
+        switch (unit.toLowerCase()) {
         case "mg":  return Result.of(milligrams(value));
         case "g":   return Result.of(grams(value));
         case "kg":  return Result.of(kilograms(value));
-        default:    return Result.error("invalid unit '%s'", unit);
+        default:    return Result.error("Invalid unit '%s'", unit);
         }
     }
 

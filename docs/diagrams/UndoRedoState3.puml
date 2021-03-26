@@ -2,19 +2,28 @@
 !include style.puml
 skinparam ClassFontColor #000000
 skinparam ClassBorderColor #000000
+skinparam Class {
+    BackgroundColor<<Current>> White
+    BorderColor<<Current>> White
+    FontColor<<Current>> White
+}
+
+hide stereotype
 
 title After command "undo"
 
-package States <<rectangle>> {
-    class State1 as "__ab0:AddressBook__"
-    class State2 as "__ab1:AddressBook__"
-    class State3 as "__ab2:AddressBook__"
+package HistoryManager <<rectangle>> {
+    class State1 as "__cmd0:DeleteRecipeCommand__"
+    class State2 as "__cmd1:AddRecipeCommand__"
+    class State3 as "__cmd2:XYZCommand__"
 }
+
+hide State3
 
 State1 -[hidden]right-> State2
 State2 -[hidden]right-> State3
 
-class Pointer as "Current State" #FFFFF
+class Pointer as "Current Pointer" #FFFFF
 
 Pointer -up-> State2
 @end

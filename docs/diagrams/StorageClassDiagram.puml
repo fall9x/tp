@@ -4,21 +4,57 @@ skinparam arrowThickness 1.1
 skinparam arrowColor STORAGE_COLOR
 skinparam classBackgroundColor STORAGE_COLOR
 
-Interface Storage <<Interface>>
-Interface UserPrefsStorage <<Interface>>
-Interface AddressBookStorage <<Interface>>
-
+Interface Storage <<interface>>
 Class StorageManager
+
+Interface UserPrefsStorage <<interface>>
+Interface RecipeBookStorage <<interface>>
+Interface IngredientBookStorage <<interface>>
+Interface UsageStorage <<interface>>
+
 Class JsonUserPrefsStorage
-Class JsonAddressBookStorage
+
+Class JsonRecipeBookStorage
+Class JsonSerializableRecipeBook
+Class JsonAdaptedRecipe
+Class JsonAdaptedIngredientReference
+
+Class JsonIngredientBookStorage
+Class JsonSerializableIngredientBook
+Class JsonAdaptedIngredient
+Class JsonAdaptedIngredientSet
+
+Class JsonRecipeUsageStorage
+Class JsonSerializableRecipeUsageList
+Class JsonAdaptedRecipeUsage
+
+Class JsonIngredientUsageStorage
+Class JsonSerializableIngredientUsageList
+Class JsonAdaptedIngredientUsage
 
 StorageManager .left.|> Storage
 StorageManager o-right-> UserPrefsStorage
-StorageManager o--> AddressBookStorage
+StorageManager o-down-> RecipeBookStorage
+StorageManager o-down-> IngredientBookStorage
+StorageManager o-down-> UsageStorage
 
 JsonUserPrefsStorage .left.|> UserPrefsStorage
-JsonAddressBookStorage .left.|> AddressBookStorage
-JsonAddressBookStorage .down.> JsonSerializableAddressBookStorage
-JsonSerializableAddressBookStorage .right.> JsonSerializablePerson
-JsonSerializablePerson .right.> JsonAdaptedTag
+
+JsonRecipeBookStorage .up.|> RecipeBookStorage
+JsonRecipeBookStorage .down.> JsonSerializableRecipeBook
+JsonSerializableRecipeBook .down.> "*" JsonAdaptedRecipe
+JsonAdaptedRecipe .down.> "*" JsonAdaptedIngredientReference
+
+JsonIngredientBookStorage .up.|> IngredientBookStorage
+JsonIngredientBookStorage .down.> JsonSerializableIngredientBook
+JsonSerializableIngredientBook .down.> "*" JsonAdaptedIngredient
+JsonAdaptedIngredient .down.> JsonAdaptedIngredientSet
+
+JsonRecipeUsageStorage .up.|> UsageStorage
+JsonRecipeUsageStorage .down.> JsonSerializableRecipeUsageList
+JsonSerializableRecipeUsageList .down.> "*" JsonAdaptedRecipeUsage
+
+JsonIngredientUsageStorage .up.|> UsageStorage
+JsonIngredientUsageStorage .down.> JsonSerializableIngredientUsageList
+JsonSerializableIngredientUsageList .down.> "*" JsonAdaptedIngredientUsage
 @enduml

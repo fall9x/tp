@@ -1,77 +1,120 @@
 package chopchop.logic.commands;
 
-import static chopchop.util.Strings.ARG_EXPIRY;
-import static chopchop.util.Strings.ARG_QUANTITY;
-import static java.util.Objects.requireNonNull;
+import static chopchop.commons.util.Enforce.enforceNonNull;
 
-import chopchop.logic.commands.exceptions.CommandException;
+import java.util.Optional;
+import java.util.Set;
+
+import chopchop.logic.history.HistoryManager;
 import chopchop.model.Model;
+import chopchop.model.attributes.ExpiryDate;
+import chopchop.model.attributes.Quantity;
+import chopchop.model.attributes.Tag;
+import chopchop.model.attributes.units.Count;
 import chopchop.model.exceptions.IncompatibleIngredientsException;
 import chopchop.model.ingredient.Ingredient;
 
-public class AddIngredientCommand extends Command {
+/**
+ * Adds an ingredient to the ingredient book.
+ */
+public class AddIngredientCommand extends Command implements Undoable {
 
-    public static final String COMMAND_WORD = "add ingredient";
+    private final String name;
+    private final Set<Tag> tags;
+    private final Optional<Quantity> quantity;
+    private final Optional<ExpiryDate> expiryDate;
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds an ingredient to the manager. "
-        + "Parameters: "
-        + "NAME "
-        + ARG_QUANTITY + "QUANTITY "
-        + ARG_EXPIRY + "EXPIRY "
-        + "\n"
-        + "Example: " + COMMAND_WORD + " "
-        + "Chili "
-        + ARG_QUANTITY + "3"
-        + ARG_EXPIRY + "2020-10-05";
-
-    public static final String MESSAGE_SUCCESS = "New ingredient added: %1$s";
-    public static final String MESSAGE_COMBINED = "Updated ingredient: %1$s";
-    public static final String MESSAGE_DUPLICATE_INGREDIENT = "This ingredient already exists in the ingredient book";
-
-
-    private final Ingredient ingredient;
+    private Ingredient addedIngredient;
+    private Ingredient existingIngredient;
+    private Ingredient combinedIngredient;
 
     /**
-     * Creates an AddCommand to add the specified {@code Person}
+     * Creates a command to add an ingredient with the given parts.
      */
-    public AddIngredientCommand(Ingredient ingredient) {
-        requireNonNull(ingredient);
-        this.ingredient = ingredient;
+    public AddIngredientCommand(String name, Optional<Quantity> qty, Optional<ExpiryDate> exp, Set<Tag> tags) {
+        enforceNonNull(name, qty, exp, tags);
+
+        this.name = name;
+        this.tags = tags;
+        this.quantity = qty;
+        this.expiryDate = exp;
     }
 
-    @Override
-    public CommandResult execute(Model model) throws CommandException {
-        requireNonNull(model);
 
-        var foo = model.findIngredientWithName(this.ingredient.getName());
-        if (foo.isPresent()) {
-            var existing = foo.get();
+
+    @Override
+    public CommandResult execute(Model model, HistoryManager historyManager) {
+        enforceNonNull(model);
+
+        if (this.quantity.map(Quantity::isZero).orElse(false)) {
+            return CommandResult.error("Quantity should not be zero");
+        }
+
+        // first create the ingredient.
+        this.addedIngredient = new Ingredient(this.name, this.quantity, this.expiryDate, this.tags);
+
+        var existingIngredientOptional = model.findIngredientWithName(this.addedIngredient.getName());
+
+        if (existingIngredientOptional.isPresent()) {
+            this.existingIngredient = existingIngredientOptional.get();
 
             try {
-                var combined = existing.combine(this.ingredient);
-                model.setIngredient(existing, combined);
-
-                return new CommandResult(String.format(MESSAGE_COMBINED, combined));
+                this.combinedIngredient = this.existingIngredient.combine(this.addedIngredient);
+                model.setIngredient(this.existingIngredient, this.combinedIngredient);
 
             } catch (IncompatibleIngredientsException e) {
-                throw new CommandException(e.toString());
+                return CommandResult.error("Could not add %s of '%s': " + e.getMessage(),
+                    this.addedIngredient.getQuantity(), this.addedIngredient.getName());
             }
 
+            return CommandResult.message("Updated ingredient '%s'", this.combinedIngredient.getName())
+                .showingIngredientList();
+
         } else {
-            model.addIngredient(ingredient);
-            return new CommandResult(String.format(MESSAGE_SUCCESS, ingredient));
+
+            model.addIngredient(this.addedIngredient);
+            return CommandResult.message("Added ingredient '%s'", this.addedIngredient.getName())
+                .showingIngredientList();
         }
     }
 
     @Override
-    public boolean equals(Object other) {
-        return other == this // short circuit if same object
-            || (other instanceof AddIngredientCommand // instanceof handles nulls
-            && ingredient.equals(((AddIngredientCommand) other).ingredient));
+    public CommandResult undo(Model model) {
+        enforceNonNull(model);
+
+        String action = "";
+        Ingredient ingr = null;
+
+        if (this.existingIngredient == null && this.combinedIngredient == null) {
+
+            model.deleteIngredient(this.addedIngredient);
+
+            ingr = this.addedIngredient;
+            action = "removed";
+        } else {
+            model.setIngredient(this.combinedIngredient, this.existingIngredient);
+
+            ingr = this.existingIngredient;
+            action = "updated";
+        }
+
+        return CommandResult.message("Undo: %s ingredient '%s'", action, ingr.getName())
+            .showingIngredientList();
     }
 
     @Override
     public String toString() {
-        return String.format("AddIngredientCommand: %s", this.ingredient);
+        return String.format("AddIngredientCommand: %s (%s)%s", this.name,
+            this.quantity.orElse(Count.of(1)), this.expiryDate
+                .map(e -> String.format(" <Expiry Date: %s>", e)).orElse("")
+            );
+    }
+
+    public static String getCommandString() {
+        return "add ingredient";
+    }
+
+    public static String getCommandHelp() {
+        return "Adds a new ingredient, or increases the quantity of an existing ingredient";
     }
 }

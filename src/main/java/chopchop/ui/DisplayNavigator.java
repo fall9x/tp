@@ -1,3 +1,5 @@
+//@@author fall9x
+
 package chopchop.ui;
 
 import chopchop.model.recipe.Recipe;
@@ -19,24 +21,43 @@ public class DisplayNavigator {
         DisplayNavigator.displayController = displayController;
     }
 
-    /**
-     * Loads the RecipeViewPanel onto the swappable display region.
-     */
-    protected static void loadRecipePanel() {
-        displayController.displayRecipeList();
+    public static void initialLoad(boolean isPresent) {
+        displayController.initialLoad(isPresent);
     }
 
     /**
      * Loads the RecipeDisplay onto the swappable display region.
      * @param recipe
      */
-    protected static void loadRecipeDisplay(Recipe recipe) {
+    public static void loadRecipeDisplay(Recipe recipe) {
         displayController.displayRecipe(recipe);
     }
+
+    /**
+     * Loads the RecipeViewPanel onto the swappable display region.
+     */
+    public static void loadRecipePanel() {
+        displayController.displayRecipeList();
+    }
+
     /**
      * Loads the IngredientViewPanel into the swappable display region.
      */
-    protected static void loadIngredientPanel() {
+    public static void loadIngredientPanel() {
         displayController.displayIngredientList();
+    }
+
+    /**
+     * Loads the RecommendationViewPanel into the swappable display region.
+     */
+    public static void loadRecommendationPanel() {
+        displayController.displayRecommendationList();
+    }
+
+    /**
+     * Returns true iff there is a valid display controller.
+     */
+    public static boolean hasDisplayController() {
+        return displayController != null;
     }
 }

@@ -1,0 +1,118 @@
+@startuml
+!include style.puml
+
+box Ui UI_COLOR_T1
+participant ":CommandBox" as CommandBox UI_COLOR
+participant ":MainWindow" as MainWindow UI_COLOR
+participant ":CommandOutput" as CommandOutput UI_COLOR
+/'participant ":StatsBox" as StatsBox UI_COLOR'/
+participant ":DisplayNavigator" as DisplayNavigator UI_COLOR
+participant ":DisplayController" as DisplayController UI_COLOR
+participant ":IngredientViewPanel" as IngredientViewPanel UI_COLOR
+end box
+
+box Logic LOGIC_COLOR_T1
+participant ":Logic" as Logic LOGIC_COLOR
+end box
+
+[-> CommandBox : handleCommandEntered()
+activate CommandBox
+
+CommandBox -> MainWindow : executeCommand("list ingredients")
+activate MainWindow
+
+MainWindow -> Logic : execute("list ingredients")
+activate Logic
+
+Logic --> MainWindow : result
+deactivate Logic
+
+MainWindow -> Logic : isStatsOutput()
+activate Logic
+Logic --> MainWindow : false
+deactivate Logic
+
+MainWindow -> CommandOutput : setFeedBackToUser(result)
+activate CommandOutput
+
+CommandOutput --> MainWindow :
+deactivate CommandOutput
+
+/'
+MainWindow -> StatsBox : clearMessage()
+activate StatsBox
+
+StatsBox -> StatsBox : showRecentRecipes(SUBTITLE_DEFAULT, list)
+activate StatsBox
+
+StatsBox --> StatsBox :
+deactivate StatsBox
+
+StatsBox --> MainWindow :
+deactivate StatsBox
+'/
+
+MainWindow -> Logic : shouldExit()
+activate Logic
+
+Logic --> MainWindow : false
+deactivate Logic
+
+MainWindow -> Logic : getSwitchedPanel()
+activate Logic
+Logic --> MainWindow : INGREDIENT_LIST
+deactivate Logic
+
+MainWindow -> DisplayNavigator : loadIngredientPanel()
+activate DisplayNavigator
+
+DisplayNavigator -> DisplayController : displayIngredientList()
+activate DisplayController
+
+
+DisplayController -> IngredientViewPanel : getRoot()
+activate IngredientViewPanel
+
+IngredientViewPanel --> DisplayController :
+deactivate IngredientViewPanel
+
+DisplayController -> IngredientViewPanel : refresh()
+activate IngredientViewPanel
+
+IngredientViewPanel --> DisplayController :
+deactivate IngredientViewPanel
+
+/'
+DisplayController -> DisplayController : selectIngredientButton()
+activate DisplayController
+
+DisplayController -> DisplayController : resetButtons()
+activate DisplayController
+
+DisplayController --> DisplayController :
+deactivate DisplayController
+
+DisplayController --> DisplayController :
+deactivate DisplayController
+'/
+
+DisplayController --> DisplayNavigator :
+deactivate DisplayController
+
+DisplayNavigator --> MainWindow :
+deactivate DisplayNavigator
+
+MainWindow --> CommandBox : result
+deactivate MainWindow
+
+
+CommandBox -> Logic : getInputHistory()
+activate Logic
+
+Logic --> CommandBox : inputHistory
+deactivate Logic
+
+
+[<--CommandBox
+deactivate CommandBox
+@enduml

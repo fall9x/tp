@@ -3,8 +3,8 @@ package chopchop.model.attributes;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import chopchop.util.Result;
-import chopchop.util.StringView;
+import chopchop.commons.util.Result;
+import chopchop.commons.util.StringView;
 import chopchop.model.attributes.units.Mass;
 import chopchop.model.attributes.units.Count;
 import chopchop.model.attributes.units.Volume;
@@ -27,8 +27,7 @@ import chopchop.model.attributes.units.Volume;
  * different ratios (prefixes) of the same unit; eg. it should be possible to add 700g to 2kg to
  * obtain 2.7kg.
  */
-public interface Quantity {
-
+public interface Quantity extends Comparable<Quantity> {
     /**
      * Adds a quantity to this, and returns a new quantity (without modifying the original).
      * The input quantity can be negative to perform a subtraction. If the units are incompatible,
@@ -37,7 +36,40 @@ public interface Quantity {
      * @param qty the addend
      * @return    a new Quantity after performing the addition.
      */
-    public Result<? extends Quantity> add(Quantity qty);
+    Result<? extends Quantity> add(Quantity qty);
+
+    /**
+     * Convenience function to subtract a quantity from this.
+     *
+     * @param qty the minuend
+     * @return    a new Quantity after performing the subtraction.
+     * @see #add(Quantity)
+     */
+    default Result<? extends Quantity> subtract(Quantity qty) {
+        return this.add(qty.negate());
+    }
+
+    /**
+     * Checks whether the given quantity is unit-compatible with this one.
+     */
+    boolean compatibleWith(Quantity qty);
+
+    /**
+     * Negates this quantity, primarily used for subtracting quantities.
+     *
+     * @return a new Quantity representing the negation of this quantity.
+     */
+    Quantity negate();
+
+    /**
+     * Checks whether the quantity is zero
+     */
+    boolean isZero();
+
+    /**
+     * Checks whether the quantity is negative
+     */
+    boolean isNegative();
 
     /**
      * Parse a quantity and its associated unit.
@@ -45,14 +77,13 @@ public interface Quantity {
      * @param input the string input
      * @return      the parsed input, or an error message.
      */
-    public static Result<Quantity> parse(String input) {
-
+    static Result<Quantity> parse(String input) {
         final List<BiFunction<Double, String, Result<Quantity>>> knownUnits = List.of(
             Mass::of, Volume::of, Count::of
         );
 
         if (input.isEmpty()) {
-            return Result.error("empty input");
+            return Result.error("Quantity string cannot be empty");
         }
 
         // this is a bit iffy, but this condition will accept things like "-31.4-48.145.201-4".
@@ -62,7 +93,7 @@ public interface Quantity {
 
         // do-notation would be really nice here.
         if (num.isError()) {
-            return Result.error("couldn't parse number: %s", num.getError());
+            return Result.error("Couldn't parse number from quantity '%s': %s", input, num.getError());
         }
 
         var unit = p.snd().trim();
@@ -76,7 +107,7 @@ public interface Quantity {
                     .map(fn -> num.then(n -> fn.apply(n, unit.toString())))
                     .filter(Result::hasValue)
                     .findFirst(),
-                String.format("unknown unit '%s'", unit))
+                String.format("Unknown unit '%s' (from '%s')", unit, input))
             );
     }
 
@@ -90,6 +121,10 @@ public interface Quantity {
     static String formatDecimalValue(double value) {
         if (value == (int) value) {
             return String.format("%d", (int) value);
+        } else if (value * 10 == (int) (value * 10)) {
+            return String.format("%.1f", value);
+        } else if (value * 100 == (int) (value * 100)) {
+            return String.format("%.2f", value);
         } else {
             return String.format("%.3f", value);
         }

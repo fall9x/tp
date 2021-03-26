@@ -1,10 +1,17 @@
 package chopchop.storage;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import chopchop.commons.exceptions.IllegalValueException;
 import chopchop.model.attributes.Name;
+import chopchop.model.attributes.Tag;
 import chopchop.model.ingredient.Ingredient;
 
 public class JsonAdaptedIngredient {
@@ -12,15 +19,18 @@ public class JsonAdaptedIngredient {
 
     private final String name;
     private final JsonAdaptedIngredientSet sets;
+    private final List<String> tags;
 
     /**
      * Constructs a {@code JsonAdaptedIngredient} with the given ingredient details.
      */
     @JsonCreator
     public JsonAdaptedIngredient(@JsonProperty("name") String name,
-                                 @JsonProperty("sets") JsonAdaptedIngredientSet sets) {
+                                 @JsonProperty("sets") JsonAdaptedIngredientSet sets,
+                                 @JsonProperty("tags") List<String> tags) {
         this.name = name;
         this.sets = sets;
+        this.tags = tags == null ? null : new ArrayList<>(tags);
     }
 
     /**
@@ -29,6 +39,7 @@ public class JsonAdaptedIngredient {
     public JsonAdaptedIngredient(Ingredient source) {
         this.name = source.getName();
         this.sets = new JsonAdaptedIngredientSet(source.getIngredientSets());
+        this.tags = source.getTags().stream().map(Tag::toString).collect(Collectors.toList());
     }
 
     /**
@@ -49,6 +60,15 @@ public class JsonAdaptedIngredient {
             throw new IllegalValueException(String.format(INGREDIENT_MISSING_FIELD_MESSAGE_FORMAT, "sets"));
         }
 
-        return new Ingredient(this.name, this.sets.toModelType());
+        if (this.tags == null) {
+            throw new IllegalValueException(String.format(INGREDIENT_MISSING_FIELD_MESSAGE_FORMAT,
+                    Tag.class.getSimpleName()));
+        }
+        Set<Tag> modelTags = new HashSet<>();
+        for (String tag : this.tags) {
+            modelTags.add(new Tag(tag));
+        }
+
+        return new Ingredient(this.name, this.sets.toModelType(), modelTags);
     }
 }

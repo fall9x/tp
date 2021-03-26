@@ -9,12 +9,10 @@
   <suppress checks="MissingJavadocMethodCheck" files=".*Test\.java"/>
   <suppress checks="CustomImportOrder" files="[\\/]chopchop[\\/]logic[\\/]parser"/>
   <suppress checks="CustomImportOrder" files="[\\/]chopchop[\\/]model[\\/]attributes"/>
-  <suppress checks="CustomImportOrder" files="[\\/]chopchop[\\/]model[\\/]ingredient"/>
-  <suppress checks="CustomImportOrder" files="[\\/]chopchop[\\/]util"/>
+  <suppress checks="CustomImportOrder" files="[\\/]chopchop[\\/]commons[\\/]util"/>
   <suppress checks="CustomImportOrder" files="[\\/]src[\\/]test"/>
   <suppress checks="SingleSpaceSeparator" files="[\\/]chopchop[\\/]logic[\\/]parser"/>
   <suppress checks="SingleSpaceSeparator" files="[\\/]chopchop[\\/]model[\\/]attributes"/>
-  <suppress checks="SingleSpaceSeparator" files="[\\/]chopchop[\\/]model[\\/]ingredient"/>
-  <suppress checks="SingleSpaceSeparator" files="[\\/]chopchop[\\/]util"/>
+  <suppress checks="SingleSpaceSeparator" files="[\\/]chopchop[\\/]commons[\\/]util"/>
   <suppress checks="SingleSpaceSeparator" files="[\\/]src[\\/]test"/>
 </suppressions>

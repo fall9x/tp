@@ -1,28 +1,30 @@
 package chopchop.model;
 
+import static chopchop.testutil.Assert.assertThrows;
+import static chopchop.testutil.TypicalIngredients.getTypicalIngredientBook;
+import static chopchop.testutil.TypicalIngredients.APRICOT;
+import static chopchop.testutil.TypicalIngredients.TAG_APRICOT;
+import static chopchop.testutil.TypicalIngredients.TAG_ALL_ONE;
+import static chopchop.testutil.TypicalIngredients.TAG_ALL_TWO;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static chopchop.logic.commands.CommandTestUtil.VALID_INGREDIENT_QTY_BANANA;
+import static chopchop.logic.commands.CommandTestUtil.VALID_INGREDIENT_EXPIRY_BANANA;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashSet;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import org.junit.jupiter.api.Test;
 
 import chopchop.model.exceptions.DuplicateEntryException;
 import chopchop.testutil.IngredientBuilder;
 import chopchop.model.ingredient.Ingredient;
 import chopchop.model.attributes.units.Count;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
-import org.junit.jupiter.api.Test;
-
-import static chopchop.testutil.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static chopchop.testutil.TypicalIngredients.APRICOT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static chopchop.testutil.TypicalIngredients.getTypicalIngredientBook;
-import static chopchop.logic.commands.CommandTestUtil.VALID_INGREDIENT_QTY_BANANA;
-import static chopchop.logic.commands.CommandTestUtil.VALID_INGREDIENT_EXPIRY_BANANA;
 
 public class IngredientBookTest {
 
@@ -47,7 +49,7 @@ public class IngredientBookTest {
 
     @Test
     public void resetData_withDuplicateIngredients_throwsDuplicateIngredientException() {
-        // Two persons with the same identity fields
+        // Two ingredients with the same identity fields
         Ingredient editedAlice = new IngredientBuilder(APRICOT)
             .withQuantity(Count.of(VALID_INGREDIENT_QTY_BANANA))
             .build();
@@ -63,22 +65,23 @@ public class IngredientBookTest {
     }
 
     @Test
-    public void hasIngredient_personNotInIngredientBook_returnsFalse() {
+    public void hasIngredient_ingredientNotInIngredientBook_returnsFalse() {
         assertFalse(ingredientBook.has(APRICOT));
     }
 
     @Test
-    public void hasIngredient_personInIngredientBook_returnsTrue() {
+    public void hasIngredient_ingredientInIngredientBook_returnsTrue() {
         ingredientBook.add(APRICOT);
         assertTrue(ingredientBook.has(APRICOT));
     }
 
     @Test
-    public void hasIngredient_personWithSameIdentityFieldsInIngredientBook_returnsTrue() {
+    public void hasIngredient_ingredientWithSameIdentityFieldsInIngredientBook_returnsTrue() {
         ingredientBook.add(APRICOT);
         Ingredient editedAlice = new IngredientBuilder(APRICOT)
             .withQuantity(Count.of(VALID_INGREDIENT_QTY_BANANA))
             .withDate(VALID_INGREDIENT_EXPIRY_BANANA)
+            .withTags(new HashSet<>(Arrays.asList(TAG_APRICOT, TAG_ALL_ONE, TAG_ALL_TWO)))
             .build();
         assertTrue(ingredientBook.has(editedAlice)); //Both identity fields must be equal
     }

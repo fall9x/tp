@@ -7,10 +7,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public class ExpiryDate implements Comparable<ExpiryDate> {
+import chopchop.commons.util.Result;
 
-    public static final String MESSAGE_CONSTRAINTS =
-        "Expiry date should be of the form yyyy-MM-dd";
+public class ExpiryDate implements Comparable<ExpiryDate> {
+    public static final String MESSAGE_CONSTRAINTS = "Expiry date should be of the form yyyy-MM-dd";
     // TODO: Accept a wider range of date/time formats
     public static final DateTimeFormatter FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
     private final LocalDate date;
@@ -24,6 +24,16 @@ public class ExpiryDate implements Comparable<ExpiryDate> {
         requireNonNull(date);
         checkArgument(isValidDate(date), MESSAGE_CONSTRAINTS);
         this.date = LocalDate.parse(date);
+    }
+
+    /**
+     * Constructs an {@code ExpiryDate}.
+     *
+     * @param date A valid LocalDate
+     */
+    public ExpiryDate(LocalDate date) {
+        requireNonNull(date);
+        this.date = date;
     }
 
     /**
@@ -41,6 +51,18 @@ public class ExpiryDate implements Comparable<ExpiryDate> {
         return true;
     }
 
+    /**
+     * Returns an expiry date from the given string, or an error message if it
+     * was in an invalid format.
+     */
+    public static Result<ExpiryDate> of(String date) {
+        if (isValidDate(date)) {
+            return Result.of(new ExpiryDate(date));
+        } else {
+            return Result.error(MESSAGE_CONSTRAINTS);
+        }
+    }
+
     public LocalDate getDate() {
         return this.date;
     }
@@ -52,21 +74,13 @@ public class ExpiryDate implements Comparable<ExpiryDate> {
 
     @Override
     public boolean equals(Object other) {
-        return other == this // short circuit if same object
-            || (other instanceof ExpiryDate // instanceof handles nulls
-            && this.date.equals(((ExpiryDate) other).date));
+        return other == this
+                || (other instanceof ExpiryDate
+                && this.date.equals(((ExpiryDate) other).date));
     }
 
     @Override
     public int compareTo(ExpiryDate other) {
         return this.date.compareTo(other.date);
-    }
-
-    /**
-     * Creates an expiry date far in the future, to represent food that either doesn't expire,
-     * or where the expiry date was not given. TODO: Remove
-     */
-    public static ExpiryDate none() {
-        return new ExpiryDate("9999-12-31");
     }
 }

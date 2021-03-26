@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.TextFlow?>
+
+<HBox styleClass="recommendation-card" prefHeight="126.0" fillHeight="false" alignment="CENTER"
+      xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+    <StackPane fx:id="recipeCardContainer" prefHeight="124.0" minWidth="148.0"/>
+    <TextFlow fx:id="recommendationText" styleClass="recommendation-text"/>
+</HBox>

@@ -2,19 +2,26 @@
 !include style.puml
 skinparam ClassFontColor #000000
 skinparam ClassBorderColor #000000
+skinparam Class {
+    BackgroundColor<<Current>> White
+    BorderColor<<Current>> White
+    FontColor<<Current>> White
+}
 
-title After command "add n/David"
+hide stereotype
 
-package States <<rectangle>> {
-    class State1 as "__ab0:AddressBook__"
-    class State2 as "__ab1:AddressBook__"
-    class State3 as "__ab2:AddressBook__"
+title After command "add recipe beef noodles"
+
+package HistoryManager <<rectangle>> {
+    class State1 as "__cmd0:DeleteRecipeCommand__"
+    class State2 as "__cmd1:AddRecipeCommand__"
+    class State3 as "__cmd2:XYZCommand__" <<Current>>
 }
 
 State1 -[hidden]right-> State2
 State2 -[hidden]right-> State3
 
-class Pointer as "Current State" #FFFFF
+class Pointer as "Current Pointer" #FFFFF
 
 Pointer -up-> State3
 @end

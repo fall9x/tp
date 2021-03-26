@@ -1,0 +1,69 @@
+@startuml
+!include ../style.puml
+skinparam arrowThickness 1.1
+skinparam arrowColor LOGIC_COLOR_T4
+skinparam classBackgroundColor LOGIC_COLOR
+
+package Logic {
+
+package Parser {
+Class CommandParser
+Class XYZCommandParser
+Class CommonParser
+Class CommandArguments
+}
+
+package Command {
+Class XYZCommand
+Class CommandResult
+Class "{abstract}\nCommand" as Command
+Interface Undoable <<interface>>
+}
+
+package History {
+Interface History <<interface>>
+Class HistoryManager
+Class CommandHistory
+}
+
+Interface Logic <<interface>>
+Class LogicManager
+}
+
+package Model{
+Class HiddenModel #FFFFFF
+}
+
+package Storage {
+Class HiddenModel #FFFFFF
+}
+
+Class HiddenOutside #FFFFFF
+HiddenOutside ..> Logic
+
+LogicManager .up.|> Logic
+LogicManager -->"1" CommandParser
+LogicManager -->"1" History
+LogicManager --> Model
+LogicManager -right-> Storage
+Logic ..> CommandResult
+LogicManager ..> CommandResult
+
+CommandParser ..> XYZCommandParser
+XYZCommandParser ..> XYZCommand : creates >
+CommonParser ..> CommandArguments
+XYZCommandParser ..> CommandArguments
+XYZCommandParser ..> CommonParser
+
+Command .up.> CommandResult
+Command .left.> Model
+XYZCommand -up-|> Command
+XYZCommand .left.|> Undoable
+LogicManager ..> Command : executes >
+note right of XYZCommand: XYZCommand = AddRecipeCommand, \nAddIngredientCommand, etc
+CommandResult -[hidden]-> Parser
+
+HistoryManager .up.|> History
+HistoryManager .left.> CommandResult
+HistoryManager -->"*" CommandHistory
+@enduml

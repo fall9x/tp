@@ -2,9 +2,9 @@
 
 package chopchop.logic.parser;
 
-import chopchop.util.Either;
-import chopchop.util.Result;
-import chopchop.util.StringView;
+import chopchop.commons.util.Either;
+import chopchop.commons.util.Result;
+import chopchop.commons.util.StringView;
 
 public class ItemReference {
 
@@ -19,6 +19,13 @@ public class ItemReference {
      */
     public Integer getZeroIndex() {
         return this.reference.fromLeft();
+    }
+
+    /**
+     * Returns the one-based index of the ItemReference, if it was an indexed reference.
+     */
+    public Integer getOneIndex() {
+        return 1 + this.getZeroIndex();
     }
 
     /**
@@ -49,6 +56,10 @@ public class ItemReference {
      * @return    an ItemReference
      */
     public static ItemReference ofZeroIndex(int idx) {
+        if (idx < 0) {
+            throw new IndexOutOfBoundsException(String.format("idx cannot be negative"));
+        }
+
         return new ItemReference(Either.left(idx));
     }
 
@@ -59,7 +70,10 @@ public class ItemReference {
      * @return    an ItemReference
      */
     public static ItemReference ofOneIndex(int idx) {
-        assert idx > 0;
+        if (idx <= 0) {
+            throw new IndexOutOfBoundsException(String.format("idx must be positive"));
+        }
+
         return new ItemReference(Either.left(idx - 1));
     }
 
@@ -82,18 +96,18 @@ public class ItemReference {
      */
     public static Result<ItemReference> parse(String input) {
         if (input.isEmpty()) {
-            return Result.error("empty input");
+            return Result.error("Empty input");
         } else if (input.startsWith("#")) {
             return new StringView(input)
                 .drop(1)
                 .parseInt()
-                .then(i -> {
+                .thenOrElseGet(i -> {
                     if (i <= 0) {
-                        return Result.error("invalid index (cannot be zero or negative)");
+                        return Result.error("Invalid index (cannot be zero or negative)");
                     } else {
                         return Result.of(ItemReference.ofOneIndex(i));
                     }
-                });
+                }, () -> Result.of(ItemReference.ofName(input)));
         } else {
             return Result.of(ItemReference.ofName(input));
         }
@@ -105,5 +119,14 @@ public class ItemReference {
         return this == obj
             || (obj instanceof ItemReference
                 && ((ItemReference) obj).reference.equals(this.reference));
+    }
+
+    @Override
+    public String toString() {
+        if (this.reference.isLeft()) {
+            return String.format("#%d", this.getZeroIndex() + 1);
+        } else {
+            return this.reference.fromRight();
+        }
     }
 }

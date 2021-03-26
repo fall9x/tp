@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<StackPane alignment="CENTER" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+    <VBox alignment="TOP_CENTER" fx:id="statsBox">
+        <Label styleClass="stats-header" text="Statistics"/>
+        <TextFlow styleClass="stats-subtitle"><children>
+        	<Text fx:id="subtitle"/>
+		</children></TextFlow>
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"><content>
+            <VBox fx:id="recipeList" spacing="7"></VBox>
+        </content></ScrollPane>
+
+    </VBox>
+</StackPane>

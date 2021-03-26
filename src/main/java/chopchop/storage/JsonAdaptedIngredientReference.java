@@ -4,10 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import chopchop.commons.exceptions.IllegalValueException;
-import chopchop.model.attributes.Name;
 import chopchop.model.attributes.Quantity;
 import chopchop.model.ingredient.IngredientReference;
-import chopchop.util.Result;
 
 public class JsonAdaptedIngredientReference {
     public static final String INGREDIENT_REFERENCE_MISSING_FIELD_MESSAGE_FORMAT =
@@ -46,19 +44,20 @@ public class JsonAdaptedIngredientReference {
      */
     public IngredientReference toModelType() throws IllegalValueException {
         if (this.name == null) {
-            throw new IllegalValueException(String.format(INGREDIENT_REFERENCE_MISSING_FIELD_MESSAGE_FORMAT,
-                Name.class.getSimpleName()));
+            throw new IllegalValueException(String.format(
+                INGREDIENT_REFERENCE_MISSING_FIELD_MESSAGE_FORMAT, "name"));
         }
 
         if (this.quantity == null) {
-            throw new IllegalValueException(String.format(INGREDIENT_REFERENCE_MISSING_FIELD_MESSAGE_FORMAT,
-                Quantity.class.getSimpleName()));
-        }
-        Result<Quantity> modelQuantity = Quantity.parse(this.quantity);
-        if (modelQuantity.isError()) {
-            throw new IllegalValueException(Name.MESSAGE_CONSTRAINTS);
+            throw new IllegalValueException(String.format(
+                INGREDIENT_REFERENCE_MISSING_FIELD_MESSAGE_FORMAT, "quantity"));
         }
 
-        return new IngredientReference(this.name, modelQuantity.getValue());
+        var qty = Quantity.parse(this.quantity);
+        if (qty.isError()) {
+            throw new IllegalValueException(qty.getError());
+        }
+
+        return new IngredientReference(this.name, qty.getValue());
     }
 }

@@ -1,18 +1,18 @@
 package chopchop.model.attributes.units;
 
-import chopchop.util.Result;
+import chopchop.commons.util.Result;
 import chopchop.model.attributes.Quantity;
+import chopchop.model.exceptions.IncompatibleIngredientsException;
 
 public class Volume implements Quantity {
-
     private static double RATIO_LITRE       = 1.0;
     private static double RATIO_MILLILITRE  = 0.001;
     private static double RATIO_CUP         = 0.250;    // we're using the metric cup, for obvious reasons.
     private static double RATIO_TEASPOON    = 0.005;    // and metric tea and tablespoons.
     private static double RATIO_TABLESPOON  = 0.015;
 
-    private static String UNIT_LITRE        = "l";
-    private static String UNIT_MILLILITRE   = "ml";
+    private static String UNIT_LITRE        = "L";
+    private static String UNIT_MILLILITRE   = "mL";
     private static String UNIT_CUP          = "cup";
     private static String UNIT_CUPS         = "cups";   // this is for convenience.
     private static String UNIT_TEASPOON     = "tsp";
@@ -23,14 +23,12 @@ public class Volume implements Quantity {
 
     private Volume(double value, double ratio) {
         // see the comment in Mass.java for an explanation of this.
-        if (ratio == 1 || ratio == 0.001) {
-            if (value > 5000) {
-                ratio *= 1000;
-                value /= 1000;
-            } else if (value < 1.0) {
-                ratio /= 1000;
-                value *= 1000;
-            }
+        if (ratio == 0.001 && value > 5000) {
+            ratio *= 1000;
+            value /= 1000;
+        } else if (ratio == 1 && value < 1.0) {
+            ratio /= 1000;
+            value *= 1000;
         }
 
         this.value = value;
@@ -38,10 +36,9 @@ public class Volume implements Quantity {
     }
 
     @Override
-    public Result<Quantity> add(Quantity qty) {
-
+    public Result<Volume> add(Quantity qty) {
         if (!(qty instanceof Volume)) {
-            return Result.error("cannot add '%s' to '%s' (incompatible units)", qty, this);
+            return Result.error("Cannot add '%s' to '%s' (incompatible units)", qty, this);
         } else {
             var vol = (Volume) qty;
             var newval = this.value + (vol.value * (vol.ratio / this.ratio));
@@ -51,8 +48,38 @@ public class Volume implements Quantity {
     }
 
     @Override
+    public Volume negate() {
+        return new Volume(-this.value, this.ratio);
+    }
+
+    @Override
+    public boolean isZero() {
+        return (this.ratio * this.value) == 0;
+    }
+
+    @Override
+    public boolean isNegative() {
+        return (this.ratio * this.value) < 0;
+    }
+
+    @Override
+    public boolean compatibleWith(Quantity qty) {
+        return qty instanceof Volume;
+    }
+
+    @Override
+    public int compareTo(Quantity other) {
+        if (!(other instanceof Volume)) {
+            throw new IncompatibleIngredientsException(
+                    String.format("Cannot compare '%s' with '%s' (incompatible units)", other, this));
+        }
+
+        return Double.compare(this.value * this.ratio, ((Volume) other).value * ((Volume) other).ratio);
+    }
+
+    @Override
     public String toString() {
-        String unit = "";
+        String unit = "?";
 
         if (this.ratio == RATIO_MILLILITRE) {
             unit = UNIT_MILLILITRE;
@@ -64,8 +91,6 @@ public class Volume implements Quantity {
             unit = UNIT_TABLESPOON;
         } else if (this.ratio == RATIO_TEASPOON) {
             unit = UNIT_TEASPOON;
-        } else {
-            unit = "?";
         }
 
         return String.format("%s%s", Quantity.formatDecimalValue(this.value), unit);
@@ -92,18 +117,18 @@ public class Volume implements Quantity {
 
         double ratio = 1;
 
-        if (unit.equals(UNIT_MILLILITRE)) {
+        if (unit.equalsIgnoreCase(UNIT_MILLILITRE)) {
             ratio = RATIO_MILLILITRE;
-        } else if (unit.equals(UNIT_LITRE)) {
+        } else if (unit.equalsIgnoreCase(UNIT_LITRE)) {
             ratio = RATIO_LITRE;
-        } else if (unit.equals(UNIT_CUP) || unit.equals(UNIT_CUPS)) {
+        } else if (unit.equalsIgnoreCase(UNIT_CUP) || unit.equalsIgnoreCase(UNIT_CUPS)) {
             ratio = RATIO_CUP;
-        } else if (unit.equals(UNIT_TABLESPOON)) {
+        } else if (unit.equalsIgnoreCase(UNIT_TABLESPOON)) {
             ratio = RATIO_TABLESPOON;
-        } else if (unit.equals(UNIT_TEASPOON)) {
+        } else if (unit.equalsIgnoreCase(UNIT_TEASPOON)) {
             ratio = RATIO_TEASPOON;
         } else {
-            return Result.error("unknown unit '%s'", unit);
+            return Result.error("Unknown unit '%s'", unit);
         }
 
         return Result.of(new Volume(value, ratio));

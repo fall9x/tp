@@ -1,7 +1,9 @@
+//@@author fall9x
+
 package chopchop.ui;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 
 /**
@@ -11,7 +13,7 @@ public class TextDisplay extends UiPart<Region> {
     private static final String FXML = "TextDisplay.fxml";
 
     @FXML
-    private TextArea textDisplay;
+    private Label textDisplay;
 
     /**
      * Creates a {@code PinBox}.
@@ -19,6 +21,6 @@ public class TextDisplay extends UiPart<Region> {
     public TextDisplay(String text) {
         super(FXML);
         // Have to decide what to do with this real estate uwu
-        textDisplay.setText(text);
+        this.textDisplay.setText(text);
     }
 }

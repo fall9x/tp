@@ -1,0 +1,77 @@
+@startuml
+!include style.puml
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":CommandParser" as CommandParser LOGIC_COLOR
+participant "<<class>>\n:StatsCommandParser" as StatsCommandParser LOGIC_COLOR
+participant "<<class>>\n:CommonParser" as CommonParser LOGIC_COLOR
+participant "r:StatsRecipeTopCommand" as StatsRecipeTopCommand LOGIC_COLOR
+participant ":CommandResult" as CommandResult LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant ":Model" as Model MODEL_COLOR
+end box
+
+[-> LogicManager : execute("stats recipe top")
+activate LogicManager
+
+LogicManager -> CommandParser : parse("stats recipe top")
+activate CommandParser
+
+CommandParser -> CommandParser : parseArgs("stats recipe top")
+activate CommandParser
+CommandParser --> CommandParser
+deactivate CommandParser
+
+CommandParser -> StatsCommandParser : parseStatsCommand("recipe top")
+activate StatsCommandParser
+
+StatsCommandParser -> CommonParser : getCommandTarget(args)
+activate CommonParser
+CommonParser --> StatsCommandParser
+deactivate CommonParser
+
+StatsCommandParser -> StatsCommandParser : parseRecipeStatsCommand(args, "top")
+activate StatsCommandParser
+
+create StatsRecipeTopCommand
+StatsCommandParser -> StatsRecipeTopCommand
+activate StatsRecipeTopCommand
+
+StatsRecipeTopCommand --> StatsCommandParser : r
+deactivate StatsRecipeTopCommand
+
+StatsCommandParser --> StatsCommandParser : r
+deactivate StatsCommandParser
+
+StatsCommandParser --> CommandParser : r
+deactivate StatsCommandParser
+
+CommandParser --> LogicManager : r
+deactivate CommandParser
+
+LogicManager -> StatsRecipeTopCommand : execute()
+activate StatsRecipeTopCommand
+
+StatsRecipeTopCommand -> Model : getMostMadeRecipeList()
+activate Model
+
+Model --> StatsRecipeTopCommand
+deactivate Model
+
+create CommandResult
+StatsRecipeTopCommand -> CommandResult
+activate CommandResult
+
+CommandResult --> StatsRecipeTopCommand
+deactivate CommandResult
+
+StatsRecipeTopCommand --> LogicManager
+deactivate StatsRecipeTopCommand
+destroy StatsRecipeTopCommand
+
+[<--LogicManager
+deactivate LogicManager
+@enduml

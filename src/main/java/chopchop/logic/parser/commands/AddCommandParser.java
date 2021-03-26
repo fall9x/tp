@@ -5,30 +5,30 @@ package chopchop.logic.parser.commands;
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import chopchop.util.Result;
-import chopchop.util.Strings;
-import chopchop.util.StringView;
-
-import chopchop.model.recipe.Recipe;
-import chopchop.model.ingredient.Ingredient;
-import chopchop.model.ingredient.IngredientReference;
-
+import chopchop.model.attributes.Tag;
+import chopchop.commons.util.Result;
+import chopchop.commons.util.StringView;
 import chopchop.model.attributes.Step;
 import chopchop.model.attributes.Quantity;
 import chopchop.model.attributes.ExpiryDate;
-import chopchop.model.attributes.units.Count;
-
-import chopchop.logic.parser.ArgName;
+import chopchop.model.ingredient.IngredientReference;
 import chopchop.logic.parser.CommandArguments;
-
 import chopchop.logic.commands.Command;
 import chopchop.logic.commands.AddRecipeCommand;
 import chopchop.logic.commands.AddIngredientCommand;
 
+import static chopchop.commons.util.Strings.ARG_EXPIRY;
+import static chopchop.commons.util.Strings.ARG_INGREDIENT;
+import static chopchop.commons.util.Strings.ARG_QUANTITY;
+import static chopchop.commons.util.Strings.ARG_STEP;
+import static chopchop.commons.util.Strings.ARG_TAG;
+import static chopchop.commons.util.Strings.COMMAND_ADD;
+import static chopchop.logic.parser.commands.CommonParser.ensureCommandName;
 import static chopchop.logic.parser.commands.CommonParser.getCommandTarget;
-import static chopchop.logic.parser.commands.CommonParser.getFirstUnknownArgument;
+import static chopchop.logic.parser.commands.CommonParser.checkArguments;
 
 public class AddCommandParser {
 
@@ -41,25 +41,30 @@ public class AddCommandParser {
      * @return     an AddCommand, if the input was valid.
      */
     public static Result<? extends Command> parseAddCommand(CommandArguments args) {
-        if (!args.getCommand().equals(Strings.COMMAND_ADD)) {
-            return Result.error("invalid command '%s' (expected '%s')", args.getCommand(), Strings.COMMAND_ADD);
-        }
+
+        ensureCommandName(args, COMMAND_ADD);
 
         return getCommandTarget(args)
             .then(target -> {
                 if (target.snd().isEmpty()) {
-                    return Result.error("recipe or ingredient name cannot be empty");
+                    return Result.error("Recipe or ingredient name cannot be empty");
+                }
+
+                // check whether the name can be parsed as an indexed ItemReference.
+                var name = target.snd().strip();
+                if (name.matches("#[0-9]+")) {
+                    return Result.error("Item name cannot start with a '#' and consist of only numbers");
                 }
 
                 switch (target.fst()) {
                 case RECIPE:
-                    return parseAddRecipeCommand(target.snd().strip(), args);
+                    return parseAddRecipeCommand(name, args);
 
                 case INGREDIENT:
-                    return parseAddIngredientCommand(target.snd().strip(), args);
+                    return parseAddIngredientCommand(name, args);
 
                 default:
-                    return Result.error("can only add recipes or ingredients ('%s' invalid)", target.fst());
+                    return Result.error("Can only add recipes or ingredients ('%s' invalid)", target.fst());
                 }
             });
     }
@@ -69,66 +74,76 @@ public class AddCommandParser {
      * {@code add ingredient NAME [/qty QUANTITY] [/expiry DATE]}
      */
     private static Result<AddIngredientCommand> parseAddIngredientCommand(String name, CommandArguments args) {
-        assert args.getCommand().equals(Strings.COMMAND_ADD);
 
-        Optional<ArgName> foo;
-        if ((foo = getFirstUnknownArgument(args, List.of(Strings.ARG_QUANTITY,
-            Strings.ARG_EXPIRY))).isPresent()) {
-
-            return Result.error("'add ingredient' command doesn't support '%s'", foo.get());
+        Optional<String> err;
+        var supportedArgs = List.of(ARG_QUANTITY, ARG_EXPIRY, ARG_TAG);
+        if ((err = checkArguments(args, "add ingredient", supportedArgs)).isPresent()) {
+            return Result.error(err.get());
         }
 
-        var qtys = args.getArgument(Strings.ARG_QUANTITY);
+        var qtys = args.getArgument(ARG_QUANTITY);
         if (qtys.size() > 1) {
-            return Result.error("multiple quantities specified");
+            return Result.error("Multiple quantities specified");
+        } else if (qtys.size() == 1 && qtys.get(0).isEmpty()) {
+            return Result.error("Specified quantity cannot be emtpy");
         }
 
-        var exps = args.getArgument(Strings.ARG_EXPIRY);
+        var exps = args.getArgument(ARG_EXPIRY);
         if (exps.size() > 1) {
-            return Result.error("multiple expiry dates specified");
+            return Result.error("Multiple expiry dates specified");
+        } else if (exps.size() == 1 && exps.get(0).isEmpty()) {
+            return Result.error("Specified expiry date cannot be empty");
         }
+
+        var tags = args.getArgument(ARG_TAG);
+        var tagSet = Set.copyOf(tags.stream()
+            .map(x -> new Tag(x))
+            .collect(Collectors.toList())
+        );
 
         // looks weird, but basically this extracts the /qty and /expiry arguments (if present),
         // then constructs the command from it -- while returning any intermediate error messages.
-        try {
-            return Result.transpose(qtys
+        return Result.transpose(qtys
+            .stream()
+            .findFirst()
+            .map(CommonParser::parseQuantity))
+            .then(qty -> Result.transpose(exps
                 .stream()
                 .findFirst()
-                .map(Quantity::parse))
-                .then(qty -> Result.transpose(exps
-                    .stream()
-                    .findFirst()
-                    .map(e -> Result.of(e)))
-                    .map(exp -> createAddIngredientCommand(name, qty, exp))
-                );
-        } catch (Exception e) {
-            return Result.error(e.getMessage());
-        }
+                .map(e -> Result.of(e)))
+                .then(exp -> createAddIngredientCommand(name, qty, exp, tagSet))
+            );
     }
 
     /**
-     * Parses an 'add ingredient' command. Syntax:
+     * Parses an 'add recipe' command. Syntax:
      * {@code add recipe NAME [/ingredient INGREDIENT_NAME [/qty QTY1]...]... [/step STEP]...}
      */
     private static Result<AddRecipeCommand> parseAddRecipeCommand(String name, CommandArguments args) {
-        assert args.getCommand().equals(Strings.COMMAND_ADD);
 
-        Optional<ArgName> foo;
-        if ((foo = getFirstUnknownArgument(args, List.of(Strings.ARG_QUANTITY,
-            Strings.ARG_INGREDIENT, Strings.ARG_STEP))).isPresent()) {
-
-            return Result.error("'add recipe' command doesn't support '%s'", foo.get());
+        Optional<String> err;
+        var supportedArgs = List.of(ARG_QUANTITY, ARG_INGREDIENT, ARG_STEP, ARG_TAG);
+        if ((err = checkArguments(args, "add recipe", supportedArgs)).isPresent()) {
+            return Result.error(err.get());
         }
+
+        var tags = args.getArgument(ARG_TAG);
+        var tagSet = Set.copyOf(tags.stream()
+            .map(x -> new Tag(x))
+            .collect(Collectors.toList())
+        );
 
         return parseIngredientList(args)
             .map(ingrs -> createAddRecipeCommand(name, ingrs,
-                    args.getAllArguments()
-                        .stream()
-                        .filter(p -> p.fst().equals(Strings.ARG_STEP))
-                        .map(p -> p.snd())
-                        .map(x -> new Step(x))
-                        .collect(Collectors.toList()))
+                args.getAllArguments()
+                    .stream()
+                    .filter(p -> p.fst().equals(ARG_STEP))
+                    .map(p -> p.snd())
+                    .map(x -> new Step(x))
+                    .collect(Collectors.toList()),
+                tagSet)
             );
+
     }
 
     /**
@@ -144,16 +159,20 @@ public class AddCommandParser {
         for (int i = 0; i < arglist.size(); i++) {
 
             var p = arglist.get(i);
-            if (p.fst().equals(Strings.ARG_INGREDIENT)) {
+            if (p.fst().equals(ARG_INGREDIENT)) {
 
                 var name = p.snd();
+                if (name.isEmpty()) {
+                    return Result.error("Ingredient name cannot be empty");
+                }
+
                 Optional<Quantity> quantity = Optional.empty();
 
                 // check the next argument for a quantity (which is optional)
                 if (i + 1 < arglist.size()) {
                     var q = arglist.get(i + 1);
-                    if (q.fst().equals(Strings.ARG_QUANTITY)) {
-                        var qty = Quantity.parse(q.snd());
+                    if (q.fst().equals(ARG_QUANTITY)) {
+                        var qty = CommonParser.parseQuantity(q.snd());
                         if (qty.isError()) {
                             return Result.error(qty.getError());
                         } else {
@@ -165,11 +184,11 @@ public class AddCommandParser {
                     }
                 }
 
-                ingredients.add(createIngredientReference(name, quantity));
+                ingredients.add(new IngredientReference(name, quantity));
 
-            } else if (p.fst().equals(Strings.ARG_QUANTITY)) {
+            } else if (p.fst().equals(ARG_QUANTITY)) {
                 return Result.error("'%s' without ingredient in argument %d [/qty %s...]",
-                    Strings.ARG_QUANTITY, i + 1, new StringView(p.snd()).take(4));
+                    ARG_QUANTITY, i + 1, new StringView(p.snd()).take(4));
             } else {
                 // do nothing.
             }
@@ -188,26 +207,19 @@ public class AddCommandParser {
 
 
 
-
-    private static IngredientReference createIngredientReference(String name, Optional<Quantity> qty) {
-        return new IngredientReference(name, qty.orElse(Count.of(1)));
-    }
-
     private static AddRecipeCommand createAddRecipeCommand(String name,
-        List<IngredientReference> ingredients, List<Step> steps) {
+        List<IngredientReference> ingredients, List<Step> steps, Set<Tag> tags) {
 
-        return new AddRecipeCommand(new Recipe(
-            name, ingredients, steps
-        ));
+        return new AddRecipeCommand(name, ingredients, steps, tags);
     }
 
 
-    private static AddIngredientCommand createAddIngredientCommand(String name,
-        Optional<Quantity> qty, Optional<String> expiry) {
 
-        return new AddIngredientCommand(new Ingredient(name,
-            qty.orElse(Count.of(1)),
-            expiry.map(ExpiryDate::new).orElse(null)
-        ));
+    private static Result<AddIngredientCommand> createAddIngredientCommand(String name, Optional<Quantity> qty,
+        Optional<String> expiry, Set<Tag> tags) {
+
+        return Result.transpose(expiry
+            .map(ExpiryDate::of))
+            .map(exp -> new AddIngredientCommand(name, qty, exp, tags));
     }
 }

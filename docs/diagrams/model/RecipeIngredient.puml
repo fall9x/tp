@@ -1,0 +1,83 @@
+@startuml
+!include ../style.puml
+
+skinparam arrowThickness 1.1
+skinparam arrowColor LOGIC_COLOR_T4
+skinparam classBackgroundColor MODEL_COLOR
+skinparam classAttributeFontColor white
+skinparam classAttributeIconSize 0
+
+package model {
+    package recipe {
+        class Recipe {
+            -ingredients : List<IngredientReference>
+            -steps : List<Step>
+            -tags : Set<Tag>
+
+            +getIngredients() : List<IngredientReference>
+            +getSteps() : List<Step>
+            +getTags() : Set<Tag>
+        }
+    }
+    package ingredient {
+        class Ingredient {
+            +SET_COMPARATOR : Comparator<Optional<ExpiryDate>>
+            -sets : TreeMap<Optional<ExpiryDate>, Quantity>
+            -tags : Set<Tag>
+
+            +getQuantity() : Quantity
+            +getExpiryDate() : Optional<ExpiryDate>
+            +getIngredientSets() : TreeMap<Optional<ExpiryDate>, Quantity>
+            +getTags() : Set<Tag>
+            +combine(Ingredient) : Ingredient
+            +split(Quantity) : Pair<Ingredient, Ingredient>
+        }
+
+        class IngredientReference {
+            -name : String
+
+            +getName() : String
+            +getQuantity() : Quantity
+        }
+    }
+    package attributes {
+        class ExpiryDate
+        class Step
+        class Tag
+        class Name
+        interface Quantity <<interface>> {
+        		+compatibleWith(Quantity): boolean
+        		+add(Quantity): Quantity
+        		+negate(): Quantity
+
+        		{static} +parse(String): Result<Quantity>
+        	}
+        	package units {
+        		class Mass
+        		class Count
+        		class Volume
+        	}
+    }
+
+    class "{abstract}\nEntry" as Entry
+}
+
+show Recipe methods
+show Ingredient methods
+show IngredientReference members
+
+Mass ..|> Quantity
+Count ..|> Quantity
+Volume ..|> Quantity
+Entry *-----> "1" Name
+Recipe o--> "*" IngredientReference
+Recipe *--> "*" Step
+Recipe *--> "*" Tag
+Ingredient *--> "0..1" ExpiryDate
+Ingredient *--> "1" Quantity
+Ingredient *--> "*" Tag
+IngredientReference *--> "1" Quantity
+Recipe -right----|> Entry
+Ingredient -left----|> Entry
+
+@enduml

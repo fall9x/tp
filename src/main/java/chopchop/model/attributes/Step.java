@@ -4,10 +4,7 @@ import static chopchop.commons.util.AppUtil.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 public class Step {
-
-    public static final String MESSAGE_CONSTRAINTS =
-            "Steps should only contain alphanumeric characters and spaces, and it should not be blank";
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{ASCII}]*";
+    public static final String MESSAGE_CONSTRAINTS = "Steps should not be blank";
 
     public final String step;
 
@@ -26,7 +23,7 @@ public class Step {
      * Returns true if a given string is a valid step.
      */
     public static boolean isValidStep(String test) {
-        return test.matches(VALIDATION_REGEX);
+        return !test.isBlank() && test.equals(test.trim());
     }
 
     @Override
@@ -36,9 +33,9 @@ public class Step {
 
     @Override
     public boolean equals(Object other) {
-        return other == this // short circuit if same object
-                || (other instanceof Step // instanceof handles nulls
-                && this.step.equals(((Step) other).step)); // state check
+        return other == this
+                || (other instanceof Step
+                && this.step.equals(((Step) other).step));
     }
 
     @Override

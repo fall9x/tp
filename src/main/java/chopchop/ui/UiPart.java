@@ -13,18 +13,17 @@ import javafx.fxml.FXMLLoader;
  * It contains a scene graph with a root node of type {@code T}.
  */
 public abstract class UiPart<T> {
-
     /** Resource folder where FXML files are stored. */
     public static final String FXML_FILE_FOLDER = "/view/";
 
-    private final FXMLLoader fxmlLoader = new FXMLLoader();
+    private final FXMLLoader fxmlLoader;
 
     /**
      * Constructs a UiPart with the specified FXML file URL.
      * The FXML file must not specify the {@code fx:controller} attribute.
      */
     public UiPart(URL fxmlFileUrl) {
-        loadFxmlFile(fxmlFileUrl, null);
+        this(fxmlFileUrl, null);
     }
 
     /**
@@ -40,7 +39,8 @@ public abstract class UiPart<T> {
      * The FXML file must not specify the {@code fx:controller} attribute.
      */
     public UiPart(URL fxmlFileUrl, T root) {
-        loadFxmlFile(fxmlFileUrl, root);
+        this.fxmlLoader = new FXMLLoader();
+        this.loadFxmlFile(fxmlFileUrl, root);
     }
 
     /**
@@ -55,7 +55,7 @@ public abstract class UiPart<T> {
      * Returns the root object of the scene graph of this UiPart.
      */
     public T getRoot() {
-        return fxmlLoader.getRoot();
+        return this.fxmlLoader.getRoot();
     }
 
     /**
@@ -65,11 +65,12 @@ public abstract class UiPart<T> {
      */
     private void loadFxmlFile(URL location, T root) {
         requireNonNull(location);
-        fxmlLoader.setLocation(location);
-        fxmlLoader.setController(this);
-        fxmlLoader.setRoot(root);
+        this.fxmlLoader.setLocation(location);
+        this.fxmlLoader.setController(this);
+        this.fxmlLoader.setRoot(root);
+
         try {
-            fxmlLoader.load();
+            this.fxmlLoader.load();
         } catch (IOException e) {
             throw new AssertionError(e);
         }
@@ -84,5 +85,4 @@ public abstract class UiPart<T> {
         URL fxmlFileUrl = MainApp.class.getResource(fxmlFileNameWithFolder);
         return requireNonNull(fxmlFileUrl);
     }
-
 }

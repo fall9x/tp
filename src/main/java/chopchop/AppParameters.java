@@ -4,9 +4,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
-import java.util.logging.Logger;
 
-import chopchop.commons.core.LogsCenter;
+import chopchop.commons.core.Log;
 import chopchop.commons.util.FileUtil;
 import javafx.application.Application;
 
@@ -14,7 +13,7 @@ import javafx.application.Application;
  * Represents the parsed command-line parameters given to the application.
  */
 public class AppParameters {
-    private static final Logger logger = LogsCenter.getLogger(AppParameters.class);
+    private static final Log logger = new Log(AppParameters.class);
 
     private Path configPath;
 
@@ -35,7 +34,7 @@ public class AppParameters {
 
         String configPathParameter = namedParameters.get("config");
         if (configPathParameter != null && !FileUtil.isValidPath(configPathParameter)) {
-            logger.warning("Invalid config path " + configPathParameter + ". Using default config path.");
+            logger.warn("Invalid config path '%s'. Using default config path", configPathParameter);
             configPathParameter = null;
         }
         appParameters.setConfigPath(configPathParameter != null ? Paths.get(configPathParameter) : null);

@@ -4,8 +4,21 @@
 <?import javafx.scene.layout.*?>
 
 <StackPane xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
-    <Button mnemonicParsing="false" prefHeight="140.0" prefWidth="168.0" styleClass="recipe-button">
+    <Button mnemonicParsing="false" maxHeight="125.0" maxWidth="148.0"
+            prefHeight="126.0" prefWidth="148.0" styleClass="ingredient-button">
         <graphic>
-            <Label fx:id="name" styleClass="recipe_name_label" text="\$name" wrapText="true" />
-        </graphic></Button>
+            <VBox alignment="CENTER">
+                <Label fx:id="ingredientName" styleClass="ingredient-name" wrapText="true" maxHeight="45" textOverrun="CENTER_ELLIPSIS"/>
+                <HBox fx:id="expiryBox" alignment="CENTER">
+                    <Label styleClass="ingredient-expiry-date" text="exp: "/>
+                    <Label fx:id="expiryDate" styleClass="ingredient-expiry-date"/>
+                </HBox>
+            </VBox>
+        </graphic>
+    </Button>
+    <Label fx:id="index" styleClass="ingredient-number" StackPane.alignment="TOP_LEFT" mouseTransparent="true"/>
+    <Label fx:id="quantity" styleClass="ingredient-quantity" StackPane.alignment="TOP_RIGHT" mouseTransparent="true"
+           maxWidth="100.0" alignment="CENTER_RIGHT" textOverrun="CENTER_ELLIPSIS"/>
+    <FlowPane fx:id="tagList" styleClass="ingredient-tags" maxHeight="-Infinity" maxWidth="148.0"
+              StackPane.alignment="BOTTOM_CENTER" hgap="4" vgap="2" mouseTransparent="true"/>
 </StackPane>

@@ -1,7 +1,19 @@
 {
-  "persons": [ {
-    "name": "Valid Recipe",
-    "ingredients": ["Apple (14g)"],
+  "recipes": [ {
+    "name": "asdf",
+    "ingredients": [ {
+    	"name": "a",
+    	"quantity": "3"
+    }, {
+    } ],
     "steps": ["CUT"]
+  }, {
+  	"name": "asdf",
+  	"ingredients": [ {
+    	"name": "a",
+    	"quantity": "3"
+    } ],
+  	"steps": [],
+  	"tags": []
   } ]
 }

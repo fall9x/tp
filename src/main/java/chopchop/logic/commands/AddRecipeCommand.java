@@ -1,70 +1,107 @@
 package chopchop.logic.commands;
 
-import static chopchop.util.Strings.ARG_INGREDIENT;
-import static chopchop.util.Strings.ARG_QUANTITY;
-import static chopchop.util.Strings.ARG_STEP;
-import static java.util.Objects.requireNonNull;
+import static chopchop.commons.util.Enforce.enforceNonNull;
 
-import chopchop.logic.commands.exceptions.CommandException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import chopchop.logic.history.HistoryManager;
 import chopchop.model.Model;
+import chopchop.model.attributes.Step;
+import chopchop.model.attributes.Tag;
+import chopchop.model.ingredient.IngredientReference;
 import chopchop.model.recipe.Recipe;
 
 /**
- * Adds a person to the address book.
+ * Adds a recipe to the recipe book.
  */
-public class AddRecipeCommand extends Command {
+public class AddRecipeCommand extends Command implements Undoable {
 
-    public static final String COMMAND_WORD = "add recipe";
+    private Recipe recipe;
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds a recipe to the recipe book. "
-            + "Parameters: "
-            + "NAME "
-            + "[" + ARG_INGREDIENT + "INGREDIENT [" + ARG_QUANTITY + " QUANTITY]]..."
-            + "[" + ARG_STEP + "STEP]...\n"
-            + "Example: " + COMMAND_WORD + " "
-            + "Sugar Tomato"
-            + ARG_INGREDIENT + "Sugar "
-            + ARG_INGREDIENT + "Tomato " + ARG_QUANTITY + " 5 "
-            + ARG_STEP + "Chop tomatoes. "
-            + ARG_STEP + "Add sugar to it and mix well. ";
-
-    public static final String MESSAGE_SUCCESS = "New recipe added: %1$s";
-    public static final String MESSAGE_DUPLICATE_RECIPE = "This recipe already exists in the recipe book";
-
-    private final Recipe recipe;
+    private final String name;
+    private final List<IngredientReference> ingredients;
+    private final List<Step> steps;
+    private final Set<Tag> tags;
 
     /**
-     * Creates an AddCommand to add the specified {@code Person}
+     * Creates a command to add a recipe with the following name, steps, ingredients, and tags.
      */
-    public AddRecipeCommand(Recipe recipe) {
-        requireNonNull(recipe);
-        this.recipe = recipe;
+    public AddRecipeCommand(String name, List<IngredientReference> ingredients, List<Step> steps, Set<Tag> tags) {
+
+        this.recipe = null;
+
+        this.name = name;
+        this.ingredients = new ArrayList<>(ingredients);
+        this.steps = new ArrayList<>(steps);
+        this.tags = new HashSet<>(tags);
     }
 
 
     @Override
-    public CommandResult execute(Model model) throws CommandException {
-        requireNonNull(model);
+    public CommandResult execute(Model model, HistoryManager historyManager) {
+        enforceNonNull(model);
 
-        if (model.hasRecipe(this.recipe)) {
-            throw new CommandException(MESSAGE_DUPLICATE_RECIPE);
+        if (model.findRecipeWithName(this.name).isPresent()) {
+            return CommandResult.error("Recipe '%s' already exists", this.name);
         }
 
+        // first, ensure that the ingredients are unique.
+        {
+            var seenIngredients = new HashSet<String>();
+            for (var ingr : this.ingredients) {
+                if (seenIngredients.contains(ingr.getName())) {
+                    return CommandResult.error("Ingredient '%s' was specified twice", ingr.getName());
+                }
+
+                if (ingr.getQuantity().isZero()) {
+                    return CommandResult.error("Quantity should not be zero (for ingredient '%s')", ingr.getName());
+                }
+
+                seenIngredients.add(ingr.getName());
+            }
+        }
+
+        // then make the recipe.
+        this.recipe = new Recipe(this.name, this.ingredients, this.steps, this.tags);
+
         model.addRecipe(this.recipe);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, this.recipe));
+
+        return CommandResult.message("Added recipe '%s'", this.recipe.getName())
+            .showingRecipe(this.recipe);
     }
+
+
+
 
     @Override
-    public boolean equals(Object other) {
-        return other == this // short circuit if same object
-                || (other instanceof AddRecipeCommand // instanceof handles nulls
-                && this.recipe.equals(((AddRecipeCommand) other).recipe));
-    }
+    public CommandResult undo(Model model) {
 
+        enforceNonNull(model);
+        enforceNonNull(this.recipe);
+
+        model.deleteRecipe(this.recipe);
+        return CommandResult.message("Undo: removed recipe '%s'", this.recipe.getName())
+            .showingRecipeList();
+    }
 
     @Override
     public String toString() {
-        return String.format("AddRecipeCommand: %s", this.recipe);
+        return String.format("AddRecipeCommand(%s, ingr: [%s], steps: [%s])", this.name,
+            String.join(", ", this.ingredients.stream().map(x -> x.toString()).collect(Collectors.toList())),
+            String.join(", ", this.steps.stream().map(x -> x.toString()).collect(Collectors.toList())));
+    }
+
+
+    public static String getCommandString() {
+        return "add recipe";
+    }
+
+    public static String getCommandHelp() {
+        return "Adds a new recipe";
     }
 }
 

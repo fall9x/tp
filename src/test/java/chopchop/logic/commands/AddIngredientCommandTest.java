@@ -1,5 +1,6 @@
 package chopchop.logic.commands;
 
+import java.util.Set;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.NoSuchElementException;
 import chopchop.model.EntryBook;
 import chopchop.model.ModelStub;
 import chopchop.model.ReadOnlyEntryBook;
+import chopchop.model.attributes.units.Count;
 import chopchop.model.attributes.units.Volume;
 import chopchop.model.ingredient.Ingredient;
 
@@ -15,69 +17,46 @@ import org.junit.jupiter.api.Test;
 import chopchop.testutil.IngredientBuilder;
 
 import static java.util.Objects.requireNonNull;
-import static chopchop.testutil.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AddIngredientCommandTest {
 
     @Test
-    public void constructor_nullIngredient_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new AddIngredientCommand(null));
-    }
-
-    @Test
     public void execute_ingredientAcceptedByModel_addSuccessful() throws Exception {
         var modelStub = new ModelStubAcceptingIngredientAdded();
-        var validIngredient = new IngredientBuilder().build();
+        var ingr = new IngredientBuilder().build();
 
-        var commandResult = new AddIngredientCommand(validIngredient).execute(modelStub);
+        var result = new AddIngredientCommand(ingr.getName(), Optional.of(ingr.getQuantity()),
+            ingr.getExpiryDate(), ingr.getTags())
+                .execute(modelStub, new CommandTestUtil.HistoryManagerStub());
 
-        assertEquals(String.format(AddIngredientCommand.MESSAGE_SUCCESS, validIngredient),
-            commandResult.getFeedbackToUser());
-        assertEquals(Arrays.asList(validIngredient), modelStub.ingredientsAdded);
+
+        assertTrue(result.didSucceed());
+        assertEquals(Arrays.asList(ingr), modelStub.ingredientsAdded);
     }
 
     @Test
     public void add_ingredients_combine() throws Exception {
-        var milk1 = new IngredientBuilder().withName("milk").withQuantity(Volume.litres(0.7)).build();
-        var milk2 = new IngredientBuilder().withName("MILK").withQuantity(Volume.cups(1)).build();
-        var milk3 = new IngredientBuilder().withName("milk").withQuantity(Volume.millilitres(950)).build();
-
         var modelStub = new ModelStubAcceptingIngredientAdded();
+        var historyStub = new CommandTestUtil.HistoryManagerStub();
 
-        assertEquals(String.format(AddIngredientCommand.MESSAGE_SUCCESS, milk1),
-            new AddIngredientCommand(milk1).execute(modelStub).getFeedbackToUser());
+        var out = new AddIngredientCommand("milk", Optional.of(Volume.litres(0.7)), Optional.empty(), Set.of())
+            .execute(modelStub, historyStub);
 
-        var out2 = new AddIngredientCommand(milk2).execute(modelStub).getFeedbackToUser();
-        System.err.println(out2);
+        assertTrue(out.didSucceed());
 
-        assertEquals(String.format(AddIngredientCommand.MESSAGE_COMBINED, milk3), out2);
-    }
+        var c2 = new AddIngredientCommand("MILK", Optional.of(Volume.cups(1)), Optional.empty(), Set.of());
+        var out2 = c2.execute(modelStub, historyStub);
 
-    @Test
-    public void equals() {
-        var apple = new IngredientBuilder().withName("Apple").build();
-        var banana = new IngredientBuilder().withName("Banana").build();
-        var addAppleCommand = new AddIngredientCommand(apple);
-        var addBananaCommand = new AddIngredientCommand(banana);
+        assertTrue(out2.didSucceed());
+        c2.undo(modelStub);
 
-        // same object -> returns true
-        assertTrue(addAppleCommand.equals(addAppleCommand));
+        assertEquals(Volume.millilitres(700), modelStub.findIngredientWithName("milk").get().getQuantity());
 
-        // same values -> returns true
-        var addAliceCommandCopy = new AddIngredientCommand(apple);
-        assertTrue(addAppleCommand.equals(addAliceCommandCopy));
-
-        // different types -> returns false
-        assertFalse(addAppleCommand.equals(1));
-
-        // null -> returns false
-        assertFalse(addAppleCommand.equals(null));
-
-        // different ingredient -> returns false
-        assertFalse(addAppleCommand.equals(addBananaCommand));
+        var out3 = new AddIngredientCommand("milk", Optional.of(Count.of(7)), Optional.empty(), Set.of())
+            .execute(modelStub, historyStub);
+        assertTrue(out3.isError());
     }
 
     /**
@@ -107,9 +86,9 @@ public class AddIngredientCommandTest {
     }
 
     /**
-     * A Model stub that always accept the ingredient being added.
+     * A Model stub that always accepts the ingredient being added.
      */
-    private class ModelStubAcceptingIngredientAdded extends ModelStub {
+    private static class ModelStubAcceptingIngredientAdded extends ModelStub {
         final ArrayList<Ingredient> ingredientsAdded = new ArrayList<>();
 
         @Override

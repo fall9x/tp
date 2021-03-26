@@ -9,15 +9,7 @@ import static java.util.Objects.requireNonNull;
  * Comparisons are case insensitive.
  */
 public class Name {
-
-    public static final String MESSAGE_CONSTRAINTS =
-            "Names should only contain alphanumeric characters and spaces, and it should not be blank";
-
-    /*
-     * The first character of the address must be a alphanumeric character, otherwise " " (a blank string) becomes a
-     * valid input. No restrictions on subsequent characters.
-     */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{ASCII}]*";
+    public static final String MESSAGE_CONSTRAINTS = "Names should not be blank";
 
     private final String name;
 
@@ -36,7 +28,7 @@ public class Name {
      * Returns true if a given string is a valid name.
      */
     public static boolean isValidName(String test) {
-        return test.matches(VALIDATION_REGEX);
+        return !test.isBlank() && test.equals(test.trim());
     }
 
     @Override
@@ -46,11 +38,11 @@ public class Name {
 
     @Override
     public boolean equals(Object other) {
-        return other == this // short circuit if same object
-                || (other instanceof Name // instanceof handles nulls
-                    && this.name.equalsIgnoreCase(((Name) other).name))
+        return other == this
+                || (other instanceof Name
+                && this.name.equalsIgnoreCase(((Name) other).name))
                 || (other instanceof String
-                    && this.name.equalsIgnoreCase((String) other));
+                && this.name.equalsIgnoreCase((String) other));
     }
 
     @Override

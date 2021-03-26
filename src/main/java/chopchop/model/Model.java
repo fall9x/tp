@@ -1,12 +1,18 @@
 package chopchop.model;
 
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 import chopchop.commons.core.GuiSettings;
+import chopchop.commons.util.Pair;
 import chopchop.model.ingredient.Ingredient;
+import chopchop.model.ingredient.IngredientReference;
 import chopchop.model.recipe.Recipe;
+import chopchop.model.usage.IngredientUsage;
+import chopchop.model.usage.RecipeUsage;
 import javafx.collections.ObservableList;
 
 /**
@@ -149,4 +155,52 @@ public interface Model {
      */
     void updateFilteredIngredientList(Predicate<? super Ingredient> predicate);
 
+    /**
+     * Starts a bulk edit operation for ingredients. Every call to {@code startEditingIngredients} *MUST*
+     * be paired with a corresponding call to {@code finishEditingIngredients}. These pairs can be nested.
+     */
+    void startEditingIngredients();
+
+    /**
+     * Finishes a bulk edit operation for ingredients. Every call to {@code finishEditingIngredients} *MUST*
+     * be paired with a corresponding call to {@code startEditingIngredients}. These pairs can be nested.
+     */
+    void finishEditingIngredients();
+
+    /** Returns the UsageList of recipe */
+    UsageList<RecipeUsage> getRecipeUsageList();
+
+    /** Return the List sorted by most made recipe. */
+    List<Pair<String, String>> getMostMadeRecipeList();
+
+    /** Returns the UsageList of ingredient */
+    UsageList<IngredientUsage> getIngredientUsageList();
+
+    /** Returns the 'actual' {@code ObservableList<>} backing the RecipeUsageList */
+    ObservableList<RecipeUsage> getObservableRecipeUsages();
+
+    /** Returns the 'actual' {@code ObservableList<>} backing the IngredientUsageList */
+    ObservableList<IngredientUsage> getObservableIngredientUsages();
+
+    void addRecipeUsage(Recipe recipe);
+
+    void removeRecipeUsage(Recipe recipe);
+
+    void addIngredientUsage(IngredientReference ingredient);
+
+    void removeIngredientUsage(IngredientReference ingredient);
+
+    /** Sets the RecipeUsageList */
+    void setRecipeUsageList(UsageList<RecipeUsage> rl);
+
+    /** Sets the IngredientUsageList */
+    void setIngredientUsageList(UsageList<IngredientUsage> rl);
+
+    List<Pair<String, String>> getRecipesMadeBetween(LocalDateTime after, LocalDateTime before);
+
+    List<Pair<String, String>> getIngredientsUsedBetween(LocalDateTime after, LocalDateTime before);
+
+    List<Pair<String, String>> getRecentlyUsedRecipes(int n);
+
+    List<Pair<String, String>> getRecentlyUsedIngredients(int n);
 }

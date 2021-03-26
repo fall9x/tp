@@ -1,10 +1,16 @@
+// IngredientCard.java
+//@@author fall9x
+
 package chopchop.ui;
 
 import chopchop.model.ingredient.Ingredient;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Rectangle;
 
 public class IngredientCard extends UiPart<Region> {
 
@@ -13,40 +19,62 @@ public class IngredientCard extends UiPart<Region> {
     public final Ingredient ingredient;
 
     @FXML
-    private Button cardPane;
+    private Label ingredientName;
 
     @FXML
-    private Label name;
+    private Label quantity;
+
+    @FXML
+    private Label expiryDate;
+
+    @FXML
+    private FlowPane tagList;
+
+    @FXML
+    private Label index;
+
+    @FXML
+    private HBox expiryBox;
 
     /**
      * Creates a {@code RecipeCard} with the given {@code Recipe}.
      */
-    public IngredientCard(Ingredient ingredient) {
+    public IngredientCard(Ingredient ingredient, int id) {
         super(FXML);
         this.ingredient = ingredient;
-        name.setText(displayFormatter(ingredient.toString()));
-    }
 
-    /**
-     * Adds a new line to separate the ingredient name and the quantity.
-     */
-    private String displayFormatter(String string) {
-        String[] temp = string.split(" ", 2);
-        return String.join("\n", temp);
+        this.index.setText(String.format("#%d", id));
+
+        this.ingredientName.setText(ingredient.getName());
+        this.quantity.setText(ingredient.getQuantity().toString());
+
+        this.ingredient.getExpiryDate().ifPresentOrElse(exp -> this.expiryDate.setText(exp.toString()), () -> {
+            this.expiryBox.setVisible(false);
+            this.expiryBox.setManaged(false);
+        });
+
+        this.ingredient.getTags().stream()
+            .map(Object::toString)
+            .sorted()
+            .map(tag -> {
+                var label = new Label(tag);
+                var rect = new Rectangle();
+                rect.setArcWidth(6.0);
+                rect.setArcHeight(6.0);
+                rect.getStyleClass().add("ingredient-tag-rect");
+
+                rect.widthProperty().bind(label.widthProperty());
+                rect.heightProperty().bind(label.heightProperty());
+
+                return new StackPane(rect, label);
+            })
+            .forEach(this.tagList.getChildren()::add);
     }
 
     @Override
     public boolean equals(Object other) {
-        // short circuit if same object
-        if (other == this) {
-            return true;
-        }
-        // instanceof handles nulls
-        if (!(other instanceof IngredientCard)) {
-            return false;
-        }
-        // state check
-        IngredientCard card = (IngredientCard) other;
-        return ingredient.equals(card.ingredient);
+        return other == this
+                || (other instanceof IngredientCard
+                && this.ingredient.equals(((IngredientCard) other).ingredient));
     }
 }

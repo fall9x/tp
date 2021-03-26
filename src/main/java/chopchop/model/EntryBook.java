@@ -75,6 +75,22 @@ public class EntryBook<T extends Entry> implements ReadOnlyEntryBook<T> {
         this.entries.remove(entry);
     }
 
+    /**
+     * Starts a bulk edit operation on the entry list. Each call to {@code startEditing} must be paired
+     * with a corresponding call to {@code finishEditing}. These pairs can be nested.
+     */
+    public void startEditing() {
+        this.entries.startEditing();
+    }
+
+    /**
+     * Finishes a bulk edit operation on the entry list. Each call to {@code finishEditing} must be paired
+     * with a corresponding call to {@code startEditing}. These pairs can be nested.
+     */
+    public void finishEditing() {
+        this.entries.finishEditing();
+    }
+
     @Override
     public String toString() {
         return this.entries.asUnmodifiableObservableList().size() + " entries";

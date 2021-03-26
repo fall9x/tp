@@ -30,7 +30,9 @@ Given below are how to use Gradle for some important project tasks.
 
 * **`test`**: Runs all tests.<
   * `./gradlew test` — Runs all tests
+  * `./gradlew headless test` — Runs all tests in headless mode
   * `./gradlew clean test` — Cleans the project and runs tests
+  * `./gradlew clean headless test` — Cleans the project and runs all tests in headless mode
 
 --------------------------------------------------------------------------------------------------------------------
 

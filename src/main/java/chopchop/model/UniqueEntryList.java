@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.Iterator;
 import java.util.List;
 
+import chopchop.commons.util.BulkEditableObservableList;
 import chopchop.model.exceptions.DuplicateEntryException;
 import chopchop.model.exceptions.EntryNotFoundException;
 import javafx.collections.FXCollections;
@@ -23,9 +24,8 @@ import javafx.collections.ObservableList;
  * @see Entry#isSame(Entry)
  */
 public class UniqueEntryList<T extends Entry> implements Iterable<T> {
-    private final ObservableList<T> internalList = FXCollections.observableArrayList();
-    private final ObservableList<T> internalUnmodifiableList =
-            FXCollections.unmodifiableObservableList(internalList);
+    private final BulkEditableObservableList<T> internalList = new BulkEditableObservableList<>();
+    private final ObservableList<T> immutList = FXCollections.unmodifiableObservableList(internalList);
 
     /**
      * Returns true if the list contains an equivalent entry as the given argument.
@@ -100,7 +100,23 @@ public class UniqueEntryList<T extends Entry> implements Iterable<T> {
      * Returns the backing list as an unmodifiable {@code ObservableList}.
      */
     public ObservableList<T> asUnmodifiableObservableList() {
-        return this.internalUnmodifiableList;
+        return this.immutList;
+    }
+
+    /**
+     * Starts a bulk edit operation on the list. Each call to {@code startEditing} must be paired
+     * with a corresponding call to {@code finishEditing}. These pairs can be nested.
+     */
+    public void startEditing() {
+        this.internalList.startEditing();
+    }
+
+    /**
+     * Finishes a bulk edit operation on the list. Each call to {@code finishEditing} must be paired
+     * with a corresponding call to {@code startEditing}. These pairs can be nested.
+     */
+    public void finishEditing() {
+        this.internalList.finishEditing();
     }
 
     @Override

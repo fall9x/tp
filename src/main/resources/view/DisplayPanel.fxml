@@ -1,77 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="520.0" prefWidth="624.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
-    <center>
-        <StackPane fx:id="displayAreaPlaceholder" prefHeight="470.0" prefWidth="624.0" BorderPane.alignment="TOP_CENTER" />
-    </center>
-   <bottom>
-        <HBox fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="59.0" prefWidth="624.0" BorderPane.alignment="TOP_CENTER">
-            <children>
-                <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleRecipePanel" styleClass="tab-button" HBox.hgrow="ALWAYS">
-                    <graphic>
-                        <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mouseTransparent="true">
-                            <children>
-                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@../images/recipe.png" />
-                                    </image>
-                                </ImageView>
-                                <Pane HBox.hgrow="ALWAYS" />
-                                <Label styleClass="label-button" text="Recipes" />
-                            </children>
-                        </VBox>
-                    </graphic>
-                </Button>
-                <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleIngredientPanel" styleClass="tab-button" HBox.hgrow="ALWAYS">
-                    <graphic>
-                        <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mouseTransparent="true">
-                            <children>
-                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@../images/ingredients.png" />
-                                    </image>
-                                </ImageView>
-                                <Pane HBox.hgrow="ALWAYS" />
-                                <Label styleClass="label-button" text="Ingredients" />
-                            </children>
-                        </VBox>
-                    </graphic>
-                </Button>
-                <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleRecommendations" styleClass="tab-button" HBox.hgrow="ALWAYS">
-                    <graphic>
-                        <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mouseTransparent="true">
-                            <children>
-                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@../images/recommendations.png" />
-                                    </image>
-                                </ImageView>
-                                <Pane HBox.hgrow="ALWAYS" />
-                                <Label styleClass="label-button" text="Recommendations" />
-                            </children>
-                        </VBox>
-                    </graphic>
-                </Button>
-                <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleFavourites" styleClass="tab-button" HBox.hgrow="ALWAYS">
-                    <graphic>
-                        <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mouseTransparent="true">
-                            <children>
-                                <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                        <Image url="@../images/favourites.png" />
-                                    </image>
-                                </ImageView>
-                                <Pane HBox.hgrow="ALWAYS" />
-                                <Label styleClass="label-button" text="Favourites" />
-                            </children>
-                        </VBox>
-                    </graphic>
-                </Button>
-            </children>
-        </HBox>
-   </bottom>
-</BorderPane>
+<VBox xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" alignment="CENTER">
+    <StackPane fx:id="displayAreaPlaceholder" VBox.vgrow="ALWAYS"/>
+    <HBox styleClass="tab-bar" maxWidth="-Infinity">
+        <Button fx:id="recipeButton" styleClass="tab-button" mnemonicParsing="false" text="Recipes"
+                onAction="#handleRecipePanel">
+            <graphic>
+                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../images/recipes.png"/>
+                </ImageView>
+            </graphic>
+        </Button>
+        <Button fx:id="ingredientButton" styleClass="tab-button" mnemonicParsing="false" text="Ingredients"
+                onAction="#handleIngredientPanel">
+            <graphic>
+                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../images/ingredients.png"/>
+                </ImageView>
+            </graphic>
+        </Button>
+        <Button fx:id="recommendationButton" styleClass="tab-button" mnemonicParsing="false" text="Recommendations"
+                onAction="#handleRecommendations">
+            <graphic>
+                <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@../images/recommendations.png"/>
+                </ImageView>
+            </graphic>
+        </Button>
+    </HBox>
+</VBox>

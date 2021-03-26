@@ -5,9 +5,8 @@ import static java.util.Objects.requireNonNull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.logging.Logger;
 
-import chopchop.commons.core.LogsCenter;
+import chopchop.commons.core.Log;
 import chopchop.commons.exceptions.DataConversionException;
 import chopchop.commons.exceptions.IllegalValueException;
 import chopchop.commons.util.FileUtil;
@@ -16,7 +15,7 @@ import chopchop.model.ReadOnlyEntryBook;
 import chopchop.model.ingredient.Ingredient;
 
 public class JsonIngredientBookStorage implements IngredientBookStorage {
-    private static final Logger logger = LogsCenter.getLogger(JsonIngredientBookStorage.class);
+    private static final Log logger = new Log(JsonIngredientBookStorage.class);
 
     private final Path filePath;
 
@@ -60,7 +59,7 @@ public class JsonIngredientBookStorage implements IngredientBookStorage {
         try {
             return Optional.of(jsonIngredientBook.get().toModelType());
         } catch (IllegalValueException ive) {
-            logger.info("Illegal values found in " + filePath + ": " + ive.getMessage());
+            logger.warn("json error ('%s'): %s", filePath, ive.getMessage());
             throw new DataConversionException(ive);
         }
     }

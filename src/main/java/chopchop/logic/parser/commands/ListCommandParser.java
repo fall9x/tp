@@ -3,24 +3,20 @@
 package chopchop.logic.parser.commands;
 
 import java.util.Optional;
-import java.util.ArrayList;
 
-import chopchop.util.Result;
-import chopchop.util.Strings;
-
-import chopchop.logic.parser.ArgName;
+import chopchop.commons.util.Result;
 import chopchop.logic.parser.CommandArguments;
-
 import chopchop.logic.commands.Command;
 import chopchop.logic.commands.ListRecipeCommand;
 import chopchop.logic.commands.ListIngredientCommand;
+import chopchop.logic.commands.ListRecommendationCommand;
 
+import static chopchop.commons.util.Strings.COMMAND_LIST;
+import static chopchop.logic.parser.commands.CommonParser.ensureCommandName;
 import static chopchop.logic.parser.commands.CommonParser.getCommandTarget;
-import static chopchop.logic.parser.commands.CommonParser.getFirstUnknownArgument;
+import static chopchop.logic.parser.commands.CommonParser.checkArguments;
 
 public class ListCommandParser {
-
-    private static final String commandName = Strings.COMMAND_LIST;
 
     /**
      * Parses a 'list' command. Syntax(es):
@@ -31,18 +27,15 @@ public class ListCommandParser {
      * @return     a ListCommand, if the input was valid.
      */
     public static Result<? extends Command> parseListCommand(CommandArguments args) {
-
-        if (!args.getCommand().equals(commandName)) {
-            return Result.error("invalid command '%s' (expected '%s')", args.getCommand(), commandName);
-        }
+        ensureCommandName(args, COMMAND_LIST);
 
         // we expect no named arguments
-        Optional<ArgName> foo;
-        if ((foo = getFirstUnknownArgument(args, new ArrayList<>())).isPresent()) {
-            return Result.error("'list' command doesn't support '%s'", foo.get());
+        Optional<String> err;
+        if ((err = checkArguments(args, "list")).isPresent()) {
+            return Result.error(err.get());
         }
 
-        return getCommandTarget(args)
+        return getCommandTarget(args, /* acceptsPlural: */ true)
             .then(target -> {
                 switch (target.fst()) {
                 case RECIPE:
@@ -51,8 +44,12 @@ public class ListCommandParser {
                 case INGREDIENT:
                     return Result.of(new ListIngredientCommand());
 
+                case RECOMMENDATION:
+                    return Result.of(new ListRecommendationCommand());
+
                 default:
-                    return Result.error("can only list recipes or ingredients ('%s' invalid)", target.fst());
+                    return Result.error("Can only list recipes, ingredients, or recommendations ('%s' invalid)",
+                            target.fst());
                 }
             });
     }

@@ -1,0 +1,32 @@
+@startuml
+!include ../style.puml
+skinparam arrowThickness 1.1
+skinparam arrowColor LOGIC_COLOR_T4
+skinparam classBackgroundColor LOGIC_COLOR
+
+package Logic {
+	package Parser {
+		Class CommandParser
+		Class XYZCommandParser
+		Class CommonParser
+		Class ArgName
+		class ItemReference
+		Class CommandArguments
+	}
+
+	class XYZCommand
+	class Command
+}
+
+CommandParser ..> XYZCommandParser
+XYZCommandParser ..> XYZCommand : creates >
+CommonParser ..> CommandArguments
+XYZCommandParser ..> ArgName
+XYZCommandParser ..> ItemReference
+XYZCommandParser ..> CommonParser
+XYZCommandParser ..> CommandArguments
+
+XYZCommand -up-|> Command
+'note left of XYZCommand: XYZCommand = AddRecipeCommand, \nAddIngredientCommand, etc
+
+@enduml

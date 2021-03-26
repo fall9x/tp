@@ -1,22 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import com.jfoenix.controls.JFXMasonryPane?>
+<?import javafx.scene.control.ScrollPane?>
 
-<?import java.net.URL?>
-<BorderPane xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
-   <stylesheets>
-      <URL value="@Style.css" />
-   </stylesheets>
-   <bottom>
-      <ScrollPane fx:id="recipePanel" pannable="true" prefHeight="470.0" prefWidth="610.0" vbarPolicy="NEVER" BorderPane.alignment="CENTER_LEFT">
-         <content>
-            <GridPane fx:id="recipeGridView" gridLinesVisible="true" hgap="20" vgap="10">
-               <padding>
-                  <Insets bottom="20.0" left="20.0" right="20.0" top="12.0" />
-               </padding></GridPane>
-         </content>
-      </ScrollPane>
-   </bottom>
-</BorderPane>
+<ScrollPane fx:id="recipePanel" fitToWidth="true" hbarPolicy="NEVER" xmlns="http://javafx.com/javafx/10.0.2-internal"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <JFXMasonryPane fx:id="recipeGridView" VSpacing="12" HSpacing="12" cellHeight="126.0" cellWidth="148.0"/>
+</ScrollPane>

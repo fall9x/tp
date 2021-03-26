@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-import chopchop.util.Pair;
+import chopchop.commons.util.Pair;
+import chopchop.commons.util.StringView;
 
 /**
  * A container class to hold a parsed command, holding its:
@@ -53,6 +54,20 @@ public class CommandArguments {
     }
 
     /**
+     * Constructs a set of command arguments consisting of the command name, any remaining
+     * non-named arguments, and some number of named arguments.
+     *
+     * @param command   the name of the command
+     * @param remaining any remaining non-named arguments
+     */
+    public CommandArguments(String command, String remaining) {
+
+        this.command    = command;
+        this.remaining  = remaining;
+        this.arguments  = new ArrayList<>();
+    }
+
+    /**
      * Constructs a set of command arguments consisting of the command name and
      * some number of named arguments.
      *
@@ -66,8 +81,8 @@ public class CommandArguments {
     }
 
     /**
-     * Constructs a set of command arguments consisting of the command name, the command
-     * target, any remaining non-named arguments, and some number of named arguments.
+     * Constructs a set of command arguments consisting of the command name, any remaining
+     * non-named arguments, and some number of named arguments.
      *
      * @param command   the name of the command
      * @param remaining any remaining non-named arguments
@@ -88,6 +103,16 @@ public class CommandArguments {
         return this.remaining;
     }
 
+    public String getFirstWordFromRemaining() {
+        // get(0) will throw an exception if the list is empty, which we
+        // definitely don't want.
+        return new StringView(this.remaining)
+            .words()
+            .stream()
+            .findFirst()
+            .orElse("");
+    }
+
     /**
      * Gets the arguments with the given name. Since it makes sense for some parameters to
      * be specified more than once, this method returns a list of all arguments with the
@@ -103,5 +128,18 @@ public class CommandArguments {
 
     public List<Pair<ArgName, String>> getAllArguments() {
         return new ArrayList<>(this.arguments);
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof CommandArguments)) {
+            return false;
+        }
+
+        var ca = (CommandArguments) obj;
+        return this.command.equals(ca.command)
+            && this.remaining.equals(ca.remaining)
+            && this.arguments.equals(ca.arguments);
     }
 }

@@ -108,5 +108,4 @@ public class JsonIngredientBookStorageTest {
     public void saveIngredientBook_nullFilePath_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> saveIngredientBook(new EntryBook<>(), null));
     }
-
 }

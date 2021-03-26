@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -20,7 +19,7 @@ import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
-import chopchop.commons.core.LogsCenter;
+import chopchop.commons.core.Log;
 import chopchop.commons.exceptions.DataConversionException;
 
 /**
@@ -28,7 +27,7 @@ import chopchop.commons.exceptions.DataConversionException;
  */
 public class JsonUtil {
 
-    private static final Logger logger = LogsCenter.getLogger(JsonUtil.class);
+    private static final Log logger = new Log(JsonUtil.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules()
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -40,7 +39,12 @@ public class JsonUtil {
                     .addDeserializer(Level.class, new LevelDeserializer(Level.class)));
 
     static <T> void serializeObjectToJsonFile(Path jsonFile, T objectToSerialize) throws IOException {
-        FileUtil.writeToFile(jsonFile, toJsonString(objectToSerialize));
+        var str = toJsonString(objectToSerialize);
+        if (!str.endsWith(String.format("%n"))) {
+            str += String.format("%n");
+        }
+
+        FileUtil.writeToFile(jsonFile, str);
     }
 
     static <T> T deserializeObjectFromJsonFile(Path jsonFile, Class<T> classOfObjectToDeserialize)
@@ -60,7 +64,7 @@ public class JsonUtil {
         requireNonNull(filePath);
 
         if (!Files.exists(filePath)) {
-            logger.info("Json file " + filePath + " not found");
+            logger.warn("Json file '%s' not found", filePath);
             return Optional.empty();
         }
 
@@ -69,7 +73,7 @@ public class JsonUtil {
         try {
             jsonFile = deserializeObjectFromJsonFile(filePath, classOfObjectToDeserialize);
         } catch (IOException e) {
-            logger.warning("Error reading from jsonFile file " + filePath + ": " + e);
+            logger.warn("Error reading from jsonFile file '%s': %s", filePath, e);
             throw new DataConversionException(e);
         }
 

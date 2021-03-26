@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
 
-<?import java.net.URL?>
-<?import javafx.scene.layout.StackPane?>
-<StackPane xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
-    <stylesheets>
-        <URL value="@Style.css" />
-    </stylesheets>
-    <TextArea fx:id="textDisplay" text="\$text" prefHeight="300.0" prefWidth="300.0"/>
-</StackPane>
+<VBox styleClass="welcome-pane" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1"
+      alignment="CENTER"><children>
+    <ImageView fitHeight="220.0" fitWidth="220.0" pickOnBounds="true" preserveRatio="true">
+        <Image url="@../images/chopchop.png"/>
+    </ImageView>
+    <Label fx:id="textDisplay" styleClass="welcome-message" wrapText="true" textAlignment="CENTER"/>
+</children></VBox>

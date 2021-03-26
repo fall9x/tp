@@ -2,7 +2,7 @@ package chopchop.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
-import chopchop.commons.core.Messages;
+import chopchop.logic.history.HistoryManager;
 import chopchop.model.Model;
 import chopchop.model.attributes.NameContainsKeywordsPredicate;
 
@@ -11,14 +11,6 @@ import chopchop.model.attributes.NameContainsKeywordsPredicate;
  * Keyword matching is case insensitive.
  */
 public class FindIngredientCommand extends Command {
-
-    public static final String COMMAND_WORD = "find ingredient";
-
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds all ingredients whose content contain any of "
-            + "the specified keywords (case-insensitive) and displays them as a list with index numbers.\n"
-            + "Parameters: KEYWORD [MORE_KEYWORDS]...\n"
-            + "Example: " + COMMAND_WORD + " sugar";
-
 
     private final NameContainsKeywordsPredicate predicate;
 
@@ -31,18 +23,25 @@ public class FindIngredientCommand extends Command {
     }
 
     @Override
-    public CommandResult execute(Model model) {
+    public CommandResult execute(Model model, HistoryManager historyManager) {
         requireNonNull(model);
         model.updateFilteredIngredientList(predicate);
-        return new CommandResult(String.format(Messages.MESSAGE_INGREDIENTS_LISTED_OVERVIEW,
-            model.getFilteredIngredientList().size()));
+
+        var sz = model.getFilteredIngredientList().size();
+        return CommandResult.message("Found %d ingredient%s", sz, sz == 1 ? "" : "s")
+            .showingIngredientList();
     }
 
     @Override
-    public boolean equals(Object other) {
-        return other == this // short circuit if same object
-                || (other instanceof FindIngredientCommand // instanceof handles nulls
-                && predicate.equals(((FindIngredientCommand) other).predicate)); // state check
+    public String toString() {
+        return String.format("FindIngredientCommand(keywords: %s)", this.predicate.getKeywords());
     }
 
+    public static String getCommandString() {
+        return "find ingredient";
+    }
+
+    public static String getCommandHelp() {
+        return "Finds ingredients by searching for keywords in their names";
+    }
 }

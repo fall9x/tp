@@ -1,0 +1,69 @@
+@startuml
+!include ../style.puml
+
+box Logic LOGIC_COLOR_T1
+participant ":CommandParser" as CommandParser LOGIC_COLOR
+participant "<<class>>\n:AddCommandParser" as AddCommandParser LOGIC_COLOR
+participant "<<class>>\n:CommonParser" as CommonParser LOGIC_COLOR
+participant "cmd :AddRecipeCommand" as AddRecipeCommand LOGIC_COLOR
+end box
+
+[-> CommandParser : parse("add recipe Pancakes...")
+activate CommandParser
+
+CommandParser -> CommandParser : parseArgs("add recipe Pancakes...")
+activate CommandParser
+
+CommandParser -> CommandParser : parseNamedArguments("/ingr...")
+activate CommandParser
+
+CommandParser --> CommandParser
+deactivate CommandParser
+
+CommandParser --> CommandParser
+deactivate CommandParser
+
+
+CommandParser -> AddCommandParser : parseAddCommand("...")
+activate AddCommandParser
+
+AddCommandParser -> CommonParser : getCommandTarget()
+activate CommonParser
+CommonParser --> AddCommandParser : RECIPE
+deactivate CommonParser
+
+AddCommandParser -> AddCommandParser : parseAddRecipeCommand()
+activate AddCommandParser
+
+
+AddCommandParser -> CommonParser : checkArguments()
+activate CommonParser
+
+CommonParser --> AddCommandParser
+deactivate CommonParser
+
+
+AddCommandParser -> AddCommandParser : parseIngredientList()
+activate AddCommandParser
+
+AddCommandParser --> AddCommandParser
+deactivate AddCommandParser
+
+
+create AddRecipeCommand
+AddCommandParser -> AddRecipeCommand
+activate AddRecipeCommand
+
+AddRecipeCommand --> AddCommandParser : cmd
+deactivate AddRecipeCommand
+
+AddCommandParser --> AddCommandParser : cmd
+deactivate AddCommandParser
+
+AddCommandParser --> CommandParser : cmd
+deactivate AddCommandParser
+
+[<--CommandParser : cmd
+deactivate CommandParser
+
+@enduml

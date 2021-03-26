@@ -1,5 +1,6 @@
 package chopchop.model.attributes;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -16,6 +17,10 @@ public class NameContainsKeywordsPredicate implements Predicate<Entry> {
         this.keywords = keywords;
     }
 
+    public List<String> getKeywords() {
+        return new ArrayList<>(this.keywords);
+    }
+
     @Override
     public boolean test(Entry entry) {
         return this.keywords.stream()
@@ -24,9 +29,8 @@ public class NameContainsKeywordsPredicate implements Predicate<Entry> {
 
     @Override
     public boolean equals(Object other) {
-        return other == this // short circuit if same object
-                || (other instanceof NameContainsKeywordsPredicate // instanceof handles nulls
-                && this.keywords.equals(((NameContainsKeywordsPredicate) other).keywords)); // state check
+        return other == this
+                || (other instanceof NameContainsKeywordsPredicate
+                && this.keywords.equals(((NameContainsKeywordsPredicate) other).keywords));
     }
-
 }
